@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Livets rollspel">
-<title>Livets rollspel</title>
+<meta name="apple-mobile-web-app-title" content="LifOS">
+<title>LifOS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Runic&display=swap" rel="stylesheet">
 <style>
@@ -1038,7 +1038,7 @@ document.addEventListener('click',e=>{
  if(t.hasAttribute('data-soon')){toast('Det här rummet byggs snart');return}
  if(t.hasAttribute('data-export')){
   if(!DL){toast('Att spara kopia går inte i den här vyn');return}
-  DL.save({filename:'livets-rollspel-'+today()+'.json',data:JSON.stringify(S,null,1)}).then(()=>toast('Kopian är sparad')).catch(()=>toast('Kopian sparades inte'));return}
+  DL.save({filename:'lifos-'+today()+'.json',data:JSON.stringify(S,null,1)}).then(()=>toast('Kopian är sparad')).catch(()=>toast('Kopian sparades inte'));return}
 });
 document.addEventListener('submit',e=>{
  if(e.target.matches('[data-bloc]')){e.preventDefault();const F=new FormData(e.target),la=parseFloat(String(F.get('lat')).replace(',','.')),lo=parseFloat(String(F.get('lon')).replace(',','.'));if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180){S.birthLoc={lat:la,lon:lo,namn:String(F.get('namn')||'').trim()||'Födelseorten'};save();render()}return}
