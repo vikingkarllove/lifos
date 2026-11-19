@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07090C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Livets rollspel">
+<title>Livets rollspel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Runic&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07090C;--panel:#0C1015;--line:#232A33;--line2:#161B22;--text:#E7EAEE;--muted:#9AA4B1;--dim:#5A6470;--gold:#E8C26A;--cream:#F1E6C8;
+--jord:#C2A86E;--vatten:#8FB3C9;--eld:#D8834A;--luft:#D9C98A;--eter:#B9A3D9;--serif:'Cormorant Garamond',Georgia,serif;--label:Jost,'Avenir Next',sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{max-width:480px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px 110px}
+.lbl{font-family:var(--label);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.p{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:14px;margin-bottom:12px}
+.p:before,.p:after{content:"";position:absolute;width:10px;height:10px;border-style:solid;border-color:var(--gold)}
+.p:before{top:-1px;left:-1px;border-width:1px 0 0 1px}.p:after{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+h1{font-family:var(--serif);font-weight:600;font-size:34px;color:var(--cream);margin:0;line-height:1.1}
+.serif{font-family:var(--serif)}
+.rune{font-family:'Noto Sans Runic','Segoe UI Historic','Apple Symbols',serif;line-height:1}
+.muted{color:var(--muted)}.small{font-size:13px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.iconbtn{width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--eter)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bar{height:4px;background:#1E242C;border-radius:2px;flex:1}.bar>i{display:block;height:4px;border-radius:2px}
+.tabs{display:flex;gap:8px;margin-bottom:8px}
+.tab{flex:1;min-height:52px;border-radius:4px;border:1px solid #2A3340;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.tab b{font-family:var(--label);font-weight:400;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tab span{font-size:11.5px;color:var(--muted)}
+.tab.on{border-color:var(--gold);background:rgba(232,194,106,.10)}.tab.on b{color:var(--gold)}
+.item{width:100%;min-height:48px;background:none;border:none;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;text-align:left;padding:0}
+.item:last-of-type{border-bottom:none}
+.ck{width:24px;height:24px;flex-shrink:0;border-radius:50%;border:1px solid #3A4450;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--bg)}
+.item.done .ck{background:var(--gold);border-color:var(--gold)}.item.done .nm{color:#6B7684}
+.tag{font-size:11.5px;margin-left:6px}
+.add{width:100%;min-height:46px;margin-top:10px;background:transparent;border:1px dashed var(--gold);border-radius:4px;color:var(--gold);font-family:var(--label);letter-spacing:.06em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{min-height:38px;border:1px solid #3A4450;border-radius:20px;padding:0 14px;background:transparent}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-family:var(--label);font-size:11px;color:var(--muted)}
+.wk div{padding:6px 0;border-radius:4px}.wk .on{border:1px solid var(--gold);color:var(--gold)}
+.dots{display:flex;justify-content:center;gap:3px;margin-top:5px;min-height:7px}.dots i{width:7px;height:7px;border-radius:50%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{min-height:92px;border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:12px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:3px}
+.tile .t{font-family:var(--serif);font-size:19px;color:var(--cream)}.tile .d{font-size:12px;color:var(--muted)}
+.tile.soon{opacity:.55}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid #1E242C;padding:8px 8px max(10px,env(safe-area-inset-bottom));display:flex;justify-content:space-around;align-items:center;z-index:5}
+nav.bottom button{min-width:58px;min-height:50px;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#7C8794;font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+nav.bottom .hearth{width:56px;height:56px;border-radius:50%;border:1px solid var(--gold);color:var(--gold);font-size:22px;letter-spacing:0}
+nav.bottom .on{color:var(--gold)}
+input,select,textarea{font:inherit;background:var(--bg);color:var(--text);border:1px solid #2A3340;border-radius:4px;padding:10px;width:100%}
+.btn{min-height:44px;border:1px solid #3A4450;border-radius:4px;background:transparent;padding:0 14px}
+.btn.gold{border-color:var(--gold);color:var(--gold)}
+.stat{background:#0F141A;border-radius:4px;padding:10px;text-align:center}
+.stat b{display:block;font-family:var(--serif);font-weight:500;font-size:22px;color:var(--gold)}
+.stat span{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#12161C;border:1px solid var(--gold);color:var(--gold);padding:10px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9;white-space:nowrap}
+.toast.show{opacity:1}
+.entry{padding:8px 0;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.zoomin{animation:zi .55s cubic-bezier(.2,.7,.2,1);transform-origin:50% 50%}@keyframes zi{from{transform:scale(.22);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.zoomin{animation:none}}
+.solidglow{filter:drop-shadow(0 0 6px currentColor);color:inherit}
+.eterport{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:6px 4px;min-width:72px;cursor:pointer}
+.eterring{position:absolute;top:2px;left:50%;width:58px;height:58px;margin-left:-29px;border-radius:50%;border:1px solid var(--eter);opacity:.35;animation:eterpuls 6s ease-in-out infinite}
+@keyframes eterpuls{0%,100%{transform:scale(.92);opacity:.2}50%{transform:scale(1.04);opacity:.5}}
+@media (prefers-reduced-motion:reduce){.eterring{animation:none}}
+.kodexblad{background:linear-gradient(#11141A,#0E1116);border-color:#4A4130;padding:18px 18px 14px}.kodexblad p{margin:0 0 10px;line-height:1.6}
+.foldh{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;padding:0;min-height:40px;color:inherit;text-align:left;cursor:pointer}.foldh .lbl{flex:1;margin:0}
+.mini{display:inline-flex;gap:3px;flex-wrap:wrap;justify-content:center}.mini i{width:7px;height:7px;border:1px solid #4A5260;border-radius:1.5px;display:block}.mini i.on{background:var(--gold);border-color:var(--gold)}
+.chev{color:var(--muted);font-size:12px;width:12px;text-align:center}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<nav class="bottom" id="nav" aria-label="Huvudmeny"></nav>
+<div class="toast" id="toast" role="status"></div>
+<script>
+// ---------- Läkeboken: övningarna och deras dagg per element ----------
+const EL = {jord:{n:'Jord',page:'Föda, verk och arv'},luft:{n:'Luft',page:'Andning, ord och rytm'},eld:{n:'Eld',page:'Kropp, träning och färdighet'},vatten:{n:'Vatten',page:'Känslor, band och vishet'},eter:{n:'Eter',page:'Stillhet, sejd och dröm'}};
+const ELORDER = ['jord','vatten','eld','luft','eter'];
+const ACTS = {
+ aktivering:{n:'Aktiveringssekvensen',e:{jord:6,vatten:4,eld:2}},
+ andning:{n:'Andning',e:{luft:10}}, toning:{n:'Toning',e:{eter:6,luft:4}}, meditation:{n:'Meditation',e:{eter:10}},
+ stretch:{n:'Stretch, 5 min',e:{vatten:6}}, ljus:{n:'Morgonljus',e:{eld:5}}, kallbad:{n:'Kallbad',e:{vatten:6,eld:6}},
+ runa:{n:'Dagens runa',e:{eter:4}}, styrka:{n:'Styrkepass',e:{eld:15,jord:5}}, sprint:{n:'Sprint',e:{eld:12}},
+ balans:{n:'Balans, 5 min',e:{jord:4,luft:4}}, lasning:{n:'Läsning',e:{luft:10}}, promenad:{n:'Lång promenad',e:{jord:10}},
+ bastu:{n:'Bastu',e:{eld:8,vatten:6}}, kvallsfraga:{n:'Kvällsfrågan',e:{vatten:8}}, dromavsikt:{n:'Drömavsikt',e:{eter:6}},
+ langstretch:{n:'Lång stretch',e:{vatten:8}}, skarmfritt:{n:'Skärmfritt före sömnen',e:{eter:4,vatten:2}},
+ fasta:{n:'Veckans fasta, 24 h',e:{eter:10,eld:10}}, skriva:{n:'Skriva',e:{luft:8}}, rita:{n:'Rita',e:{jord:8}},
+ vandring:{n:'Vandring',e:{jord:12}}, bad:{n:'Bad i sjö eller hav',e:{vatten:10}}, sejd:{n:'Sejd',e:{eter:8}},
+ dromdagbok:{n:'Drömdagbok',e:{eter:6}}, relation:{n:'Tid med en nära',e:{vatten:10}}, kost:{n:'Kost enligt dagen',e:{jord:6}},
+ jordning:{n:'Jordning, barfota',e:{jord:6}}, sol:{n:'Soljus',e:{eld:5}}
+};
+const EXTRA = ['bastu','kallbad','promenad','vandring','styrka','meditation','lasning','skriva','rita','bad','relation','sejd','jordning','sol'];
+
+// ---------- Veckans sju arketyper och protokoll ----------
+const ARK = [
+ {d:'söndag',pl:'Solen',gud:'Balder',ark:'Ljusbäraren',k:'glans, glädje och helhet',slag:'varm',kost:'bondkost',q:'Vad lyste jag upp i dag?'},
+ {d:'måndag',pl:'Månen',gud:'Måne',ark:'Drömmaren',k:'mottaglighet, känsla och minne',slag:'kall',kost:'jägarkost',q:'Vad kände jag utan att säga det?'},
+ {d:'tisdag',pl:'Mars',gud:'Tyr',ark:'Den edsvurne',k:'mod, rättvisa och ordet som hålls',slag:'varm',kost:'bondkost',q:'Vilket löfte höll jag?'},
+ {d:'onsdag',pl:'Merkurius',gud:'Oden',ark:'Vandraren',k:'visdom, ord och offer för kunskap',slag:'eter',kost:'fasta',q:'Vad gav jag upp, och vad fick jag veta?'},
+ {d:'torsdag',pl:'Jupiter',gud:'Tor',ark:'Beskyddaren',k:'kraft, trygghet och folket',slag:'varm',kost:'bondkost',q:'Vem stod jag upp för?'},
+ {d:'fredag',pl:'Venus',gud:'Freja',ark:'Älskarinnan',k:'kärlek, skönhet och sejd',slag:'kall',kost:'jägarkost',q:'Vad var vackert i dag?'},
+ {d:'lördag',pl:'Saturnus',gud:'Loke',ark:'Gränsvandraren',k:'rening, avslut och förvandling',slag:'kall',kost:'jägarkost',q:'Vad lämnar jag bakom mig?'}];
+const RUNES=[['ᛋ','Sowilo','solens runa'],['ᛗ','Mannaz','människans och sinnets runa'],['ᛏ','Tiwaz','Tyrs runa'],['ᚨ','Ansuz','Odens runa'],['ᚦ','Thurisaz','Tors runa'],['ᚠ','Fehu','vanernas rikedom'],['ᛚ','Laguz','vattnets runa, badets dag']];
+const VERK=['Möt solen ute, och gör något som lyser upp någon annans dag.',
+ 'Skriv drömmen i dagboken på morgonen, ta kallbadet, och sätt en drömavsikt på kvällen.',
+ 'Svär en liten ed på morgonen och håll den. Gör det svåraste först.',
+ 'Den heliga dagen: Odens offer. Fastan, stillheten och studier i runorna; bara roten och det heliga.',
+ 'Lyft tungt, och bär en börda åt någon annan.',
+ 'Skapa något vackert eller ge en gåva till någon nära. Bastu och sejd.',
+ 'Fixardagen: rena hemmet och kroppen, laga det som är trasigt, bastu och kallbad, och bryt en vana.'];
+const RINFO=[
+ {m:'Solen, segern och klarheten: ljuset som leder och livskraften som strålar ut.',k:'Sól er landa ljómi',ks:'Solen är ländernas ljus (isländska runkvädet)',g:'Ssss-ooo-wi-looo, eller ett långt ssss som en strålande ton',r:'Rita runan i luften mot solen, eller i daggen på en ruta.'},
+ {m:'Människan, sinnet och minnet: jaget i spegeln och banden till andra.',k:'Maðr er manns gaman',ks:'Människan är människans glädje (isländska runkvädet)',g:'Mmmm-aaa-nnnaz, ett varmt surr i bröstet',r:'Rita runan på handflatan och lägg den mot hjärtat.'},
+ {m:'Tyr och rättvisan: modet, offret och ordet som hålls.',k:'Týr er einhendr áss',ks:'Tyr är den enhänte asen (isländska runkvädet)',g:'Tiiii-waaaz, eller ett klart, rakt tiiiir',r:'Rita runan som en pil uppåt innan du gör det svåraste.'},
+ {m:'Oden, ordet och inspirationen: anden som talar och visdomen som vinns genom offer.',k:'Óss er aldingautr ok ásgarðs jöfurr ok valhallar vísi',ks:'Oden är den urgamle skaparen, Asgårds furste och Valhalls hövding (isländska runkvädet)',g:'Aaaa-nnn-suuuz, ett öppet aaaa från hela kroppen',r:'Rista runan i trä eller rita den, och sitt i tystnad med den.'},
+ {m:'Tursen och Tors kraft: urkraften som både hotar och skyddar, hammaren som håller kaos borta.',k:'Þurs er kvenna kvöl',ks:'Tursen är kvinnornas plåga (isländska runkvädet); den vilda kraften som måste tämjas',g:'Thuuu-ri-saaz, ett tungt, mullrande thhhh',r:'Rita runan innan du lyfter tungt, som en hammare som slår.'},
+ {m:'Rikedomen och det som flödar: boskap, guld och vanernas gåvor, det som växer när det delas.',k:'Fé er frænda róg',ks:'Rikedom är tvedräkt mellan fränder (isländska runkvädet); därför ska den ges vidare',g:'Ffff-eee-huuu, en mjuk, flödande ton',r:'Rita runan på en gåva du ger bort.'},
+ {m:'Vattnet, flödet och reningen: sjön, källan och det undermedvetnas djup.',k:'Lögr er vellanda vatn',ks:'Vattnet är det strömmande vattnet (isländska runkvädet)',g:'Llll-aaa-guuuz, en böljande ton som vatten',r:'Rita runan i vattnet innan du badar, eller på den immiga spegeln i bastun.'}];
+Object.assign(ACTS,{sol_mote:{n:'Möt solen ute',e:{eld:6}},ljusgava:{n:'Lys upp någons dag',e:{vatten:8}},lyssna:{n:'Tio minuter utan intryck',e:{vatten:6}},
+ ed:{n:'Svär dagens ed',e:{eld:6}},svarast:{n:'Gör det svåraste först',e:{eld:8}},runstudie:{n:'Studera dagens runa',e:{eter:8}},kodex:{n:'Läs i kodexen',e:{luft:8}},
+ stillhet:{n:'Stillhet eller utesittning',e:{eter:8}},borda:{n:'Bär en börda åt någon',e:{vatten:8,jord:4}},vackert:{n:'Skapa något vackert',e:{luft:4,jord:4}},
+ gava:{n:'Ge en gåva till någon nära',e:{vatten:8}},rena:{n:'Rena hemmet',e:{jord:8}},laga:{n:'Laga något trasigt',e:{jord:8}},vana:{n:'Bryt en vana',e:{vatten:6,eter:4}}});
+const ARKPLAN={0:{morgon:['sol_mote'],dag:['ljusgava','relation'],kvall:[]},1:{morgon:['dromdagbok'],dag:['lyssna'],kvall:[]},2:{morgon:['ed'],dag:['svarast'],kvall:[]},
+ 3:{morgon:['runstudie'],dag:['kodex','skriva'],kvall:['stillhet']},4:{morgon:[],dag:['borda'],kvall:[]},5:{morgon:[],dag:['vackert','gava'],kvall:['sejd']},6:{morgon:[],dag:['rena','laga','vana'],kvall:[]}};
+const isArk=(wd,a)=>Object.values(ARKPLAN[wd]).some(l=>l.includes(a));
+function lists(wd){
+ const m=['andning','toning','meditation','stretch','ljus']; if([1,3,6].includes(wd)) m.push('kallbad'); m.push('runa');
+ const d=[]; if([0,2,4].includes(wd)) d.push('styrka'); if([2,4].includes(wd)) d.push('sprint');
+ if(![0,3].includes(wd)) d.push('balans'); d.push('lasning'); if([1,5,6].includes(wd)) d.push('promenad');
+ d.push(wd===3?'fasta':'kost');
+ const k=[]; if([5,6].includes(wd)) k.push('bastu'); k.push('kvallsfraga'); if(wd===1) k.push('dromavsikt'); if(wd===6) k.push('langstretch'); k.push('skarmfritt');
+ const P=ARKPLAN[wd]; return {morgon:[...P.morgon,...m],dag:[...P.dag,...d],kvall:[...k.slice(0,0),...P.kvall,...k]};
+}
+const DOTS = wd => { const r=[]; if([0,2,4].includes(wd)) r.push('var(--eld)'); if([2,4].includes(wd)) r.push('var(--eld)'); if(wd===3) r.push('ring'); if([1,3,6].includes(wd)) r.push('var(--vatten)'); if([5,6].includes(wd)) r.push('#C0503C'); return r; };
+
+// ---------- Kalendern: 13 månader à 28 dagar från Mödranatt ----------
+const MON = ['Is','Torre','Skare','Ostara','Sav','Blomst','Sol','Dagg','Gull','Haust','Dis','Blot','Jul'];
+const SOLST = {2023:'2023-12-22',2024:'2024-12-21',2025:'2025-12-21',2026:'2026-12-21',2027:'2027-12-22',2028:'2028-12-21',2029:'2029-12-21',2030:'2030-12-21',2031:'2031-12-22'};
+const PHASE = ['nymåne','tilltagande','fullmåne','avtagande'];
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dparse(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function solFor(y){return dparse(SOLST[y]||(y+'-12-21'))}
+function cal(date){
+ const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+ let base=solFor(d.getFullYear()); if(d<base) base=solFor(d.getFullYear()-1);
+ const diff=Math.round((d-base)/864e5);
+ if(diff===0) return {txt:'Mödranatt',sub:'dagen bortom tiden',week:0,idx:0,mo:-1,day:0,base};
+ const i=diff-1; if(i>=364) return {txt:'Dagen bortom tiden',sub:'utanför månaderna',week:0,idx:diff,mo:-1,day:0,base};
+ const mo=Math.floor(i/28), day=i%28+1, w=Math.floor((day-1)/7);
+ return {txt:MON[mo]+' '+day,sub:'vecka '+(w+1)+' · '+PHASE[w],week:w+1,idx:diff,mo,day,base};
+}
+
+// ---------- Lagring ----------
+const KEY='livets-rollspel-v1';
+let S={log:[],custom:{}};
+try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+Object.assign(ACTS,S.custom);
+
+// ---------- Beräkningar ----------
+const today=()=>iso(new Date());
+function done(act,day){return S.log.some(l=>l.a===act&&l.d===day)}
+function toggle(act,day,extra){
+ const i=S.log.findIndex(l=>l.a===act&&l.d===day&&!!l.x===!!extra);
+ if(i>=0&&!extra){S.log.splice(i,1);save();return false}
+ S.log.push({a:act,d:day,t:Date.now(),x:!!extra});save();return true;
+}
+function daggOf(entries){const t={jord:0,luft:0,eld:0,vatten:0,eter:0};entries.forEach(l=>{const a=ACTS[l.a];if(a)for(const k in a.e)t[k]+=a.e[k]});return t}
+function level(d){return 1+Math.floor((Math.sqrt(1+8*d/60)-1)/2)}
+function levelFloor(n){return 60*(n-1)*n/2}
+const CLASS={eld:['Kämpen',['Sköldbärare','Drengr','Huskarl','Kämpe','Bärsärk']],luft:['Skalden',['Lyssnare','Sagoman','Skald','Lagman','Tul']],
+ vatten:['Helaren',['Vattenbärare','Läkare','Signare','Klok','Brunnsväktare']],jord:['Bonden',['Torpare','Bonde','Odalbonde','Storbonde','Hövding']],
+ eter:['Runmästaren',['Lärjunge','Runristare','Erilaz','Vitke','Siare']]};
+function title(el,lv){return CLASS[el][1][Math.min(4,Math.floor((lv-1)/5))]}
+function svit(){let n=0;const d=new Date();if(!['andning','toning','meditation'].every(a=>done(a,iso(d))))d.setDate(d.getDate()-1);
+ while(['andning','toning','meditation'].every(a=>done(a,iso(d)))){n++;d.setDate(d.getDate()-1)}return n}
+function weekStart(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d}
+
+// ---------- Rendering ----------
+let view='harden', tabSel=null, picker=false;
+const app=document.getElementById('app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('show'),1800)}
+function elTag(a){const e=Object.keys(ACTS[a].e);return e.map(k=>`<span class="tag" style="color:var(--${k})">${EL[k].n}</span>`).join('')}
+function itemHTML(a,day,ark){const dn=done(a,day);const tg=(ark!==null&&ark!==undefined&&ark!==false)?`<span class="tag" style="color:var(--gold)"><span class="rune">${RUNES[ark][0]}</span> ${ARK[ark].ark}</span>`:'';return `<button class="item ${dn?'done':''}" data-act="${a}"><span class="nm">${esc(ACTS[a].n)}${tg}</span><span class="ck">${dn?'✓':''}</span></button>`}
+const ETERSVG='<svg width="30" height="30" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M20 3l16 11.6-6.1 18.8H10.1L4 14.6z"/><path d="M20 10l9.5 6.9-3.6 11.2H14.1l-3.6-11.2z"/></svg>';
+
+function dayClockSVG(){
+ const now=new Date(), t=now.getHours()+now.getMinutes()/60, f=v=>v.toFixed(1), STONE='#D6CAA6';
+ const P=(deg,r)=>{const a=(deg-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]};
+ let g='';
+ for(let i=0;i<24;i++){const [x,y]=P(i*15,52);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="${i%3===0?1.8:1.1}" fill="${i%3===0?'#7C8794':'#4A5260'}"/>`}
+ g+=`<circle r="38" fill="none" stroke="${STONE}" stroke-width="4.5"/>`;
+ [0,90,180,270].forEach(d=>{const [x1,y1]=P(d,7),[x2,y2]=P(d,38);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="${STONE}" stroke-width="4" stroke-linecap="round"/>`});
+ g+=`<circle r="6.5" fill="#07090C" stroke="${STONE}" stroke-width="3"/>`;
+ [45,135,225,315].forEach(d=>{const [x,y]=P(d,21);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="4" fill="${STONE}"/>`});
+ [0,90,180,270].forEach(d=>{const [x,y]=P(d,38);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="5" fill="#07090C" stroke="#E8C26A" stroke-width="1.1"/><path d="M${f(x-3)} ${f(y)}h6M${f(x)} ${f(y-3)}v6" stroke="#E8C26A" stroke-width="1"/>`});
+ [45,135,225,315].forEach(d=>{const [x,y]=P(d,38);g+=`<path d="M${f(x)} ${f(y-4)}L${f(x+3.4)} ${f(y)}L${f(x)} ${f(y+4)}L${f(x-3.4)} ${f(y)}z" fill="#07090C" stroke="#D9C98A" stroke-width=".9"/>`});
+ const d=t/24*360,[sx,sy]=P(d,52);
+ for(let k=0;k<8;k++){g+=`<path d="M${f(sx+5*Math.cos(k*Math.PI/4))} ${f(sy+5*Math.sin(k*Math.PI/4))}L${f(sx+7*Math.cos(k*Math.PI/4))} ${f(sy+7*Math.sin(k*Math.PI/4))}" stroke="#E8C26A" stroke-width=".9" stroke-linecap="round"/>`}
+ g+=`<circle cx="${f(sx)}" cy="${f(sy)}" r="3.6" fill="#E8C26A"/>`;
+ const ph=t<3||t>=21?'natt':t<9?'morgon':t<15?'dag':'kväll';
+ const hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+ return `<svg width="100%" height="140" viewBox="-62 -62 124 124" role="img" aria-label="Dagsklockan som solkors, klockan är ${hm}, ${ph}">${g}</svg><p class="muted" style="margin:2px 0 0;text-align:center;font-size:11px">${hm} · ${ph}</p>`;
+}
+// ---------- Dygnet: organklockan och doshornas klocka ----------
+const TCMC={'trä':'#7FA36A','metall':'#C9CDD3','jord':'#C2A86E','eld':'#D8834A','vatten':'#8FB3C9'};
+const TCM=[[23,'Gallblåsan','trä','Sömn. Gallblåsan vilar och beslut mognar.'],[1,'Levern','trä','Djup sömn. Levern renar och förnyar blodet.'],
+ [3,'Lungorna','metall','Andningens tid. De tidiga timmarna, då traditionen vaknar för andning och meditation.'],[5,'Tjocktarmen','metall','Att släppa taget: vatten, toalett, rening.'],
+ [7,'Magen','jord','Matsmältningen vaknar: dagens rikaste frukost.'],[9,'Mjälten','jord','Klar tanke: koncentrerat arbete och lärande.'],
+ [11,'Hjärtat','eld','Glädje och möten. En lätt lunch, inte för tung.'],[13,'Tunntarmen','eld','Sortera och smälta, i maten och i tankarna.'],
+ [15,'Urinblåsan','vatten','Drick, lär och arbeta. Eftermiddagens andra kraft.'],[17,'Njurarna','vatten','Vila och återhämtning. Livskraftens förråd fylls.'],
+ [19,'Hjärtsäcken','eld','Närhet och umgänge, värme med dem du håller av.'],[21,'Trippelvärmaren','eld','Varva ner. Kroppen förbereder sömnen.']];
+const DOSHA=[[2,'Vata','luft och eter','#B9A3D9','Vakna före solen. Andning, meditation och tystnad; sinnet är lätt och klart.'],
+ [6,'Kapha','jord och vatten','#C2A86E','Rörelse och träning skakar av tyngden. Lätt frukost.'],
+ [10,'Pitta','eld och vatten','#D8834A','Matsmältningens eld är starkast: dagens huvudmål vid middag, och det skarpaste arbetet.'],
+ [14,'Vata','luft och eter','#B9A3D9','Skapande, samtal och rörelse.'],
+ [18,'Kapha','jord och vatten','#C2A86E','Varva ner, ät en lätt middag, och sov helst före tio.'],
+ [22,'Pitta','eld och vatten','#D8834A','Kroppens inre rening och matsmältning under sömnen.']];
+function tcmAt(t){let r=TCM[0];for(const x of TCM){const s=x[0],e=(s+2)%24;if(s<e?(t>=s&&t<e):(t>=s||t<e))r=x}return r}
+function doshaAt(t){let r=DOSHA[DOSHA.length-1];for(const x of DOSHA){const s=x[0],e=(s+4)%24;if(s<e?(t>=s&&t<e):(t>=s||t<e))r=x}return r}
+// Solens gång för platsen (NOAA, förenklad)
+function solDag(d,lat,lon){
+ const rad=Math.PI/180, n0=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate(),12)), J=n0/864e5+2440587.5, n=J-2451545;
+ const L=(280.46+0.9856474*n)%360, g=(357.528+0.9856003*n)*rad, lam=(L+1.915*Math.sin(g)+0.02*Math.sin(2*g))*rad, eps=23.439*rad;
+ const dec=Math.asin(Math.sin(eps)*Math.sin(lam)), ra=Math.atan2(Math.cos(eps)*Math.sin(lam),Math.cos(lam))/rad;
+ let eot=(L-((ra+360)%360)); eot=((eot+540)%360-180)*4; // minuter
+ const tz=-n0.getTimezoneOffset()/60, noon=12-lon/15-eot/60+tz; // lokal klocktid
+ const c=(Math.sin(-0.833*rad)-Math.sin(lat*rad)*Math.sin(dec))/(Math.cos(lat*rad)*Math.cos(dec));
+ if(c>1)return {noon,rise:null,set:null,polar:'natt'}; if(c<-1)return {noon,rise:null,set:null,polar:'dag'};
+ const H=Math.acos(c)/rad/15; return {noon,rise:noon-H,set:noon+H};
+}
+const LOC0={lat:59.33,lon:18.07,namn:'Stockholm'};
+function loc(){return S.loc||LOC0}
+// Planettimmarna: kaldeisk ordning, dagens planet styr första timmen efter soluppgång
+const PLAN=[['Saturnus','♄','ᛚ','bly','#8A8496','Saturnus timme: disciplin, ordning, avslut och tystnad. Laga, städa, sätt gränser.'],
+ ['Jupiter','♃','ᚦ','tenn','#7E9CC9','Jupiters timme: växt och vidsyn. Planera, ge, be om något, lär av en mästare.'],
+ ['Mars','♂','ᛏ','järn','#C2563E','Mars timme: kraft och mod. Träna, ta itu med det svåra, kämpa.'],
+ ['Solen','☉','ᛋ','guld','#E8C26A','Solens timme: livskraft och ära. Synas, leda, sola, göra det som ger glans.'],
+ ['Venus','♀','ᚠ','koppar','#C77A4A','Venus timme: kärlek och skönhet. Konst, musik, umgänge, njutning.'],
+ ['Merkurius','☿','ᚨ','kvicksilver','#B9A3D9','Merkurius timme: ord och tanke. Skriv, läs, studera, samtala, resa.'],
+ ['Månen','☽','ᛗ','silver','#C9CDD3','Månens timme: känsla och dröm. Hem, vatten, vila, lyssna inåt.']];
+const DAGPLAN=[3,6,2,5,1,4,0];
+function planTimmar(now){
+ const {lat,lon}=loc(), d0=new Date(now.getFullYear(),now.getMonth(),now.getDate()), dm=new Date(d0-864e5), dp=new Date(+d0+864e5);
+ const s=solDag(d0,lat,lon), sm=solDag(dm,lat,lon), sp=solDag(dp,lat,lon);
+ if(s.rise==null||sm.set==null||sp.rise==null)return null;
+ const t=now.getHours()+now.getMinutes()/60, out=[];
+ const block=(wd,rise,set,nextRise)=>{const dl=(set-rise)/12,nl=(nextRise+24-set)/12,st=DAGPLAN[wd];
+  for(let k=0;k<24;k++){const a=k<12?rise+k*dl:set+(k-12)*nl,b=k<12?rise+(k+1)*dl:set+(k-11)*nl;out.push({a,b,p:PLAN[(st+k)%7],natt:k>=12})}};
+ if(t<s.rise){block((now.getDay()+6)%7,sm.rise-24,sm.set-24,s.rise)}else block(now.getDay(),s.rise,s.set,sp.rise);
+ return {timmar:out,sol:s};
+}
+// Eyktirna: de åtta dagsmärkena, räknade efter solens verkliga gång
+const EYKT=[[0,'Miðnætti','midnatt','Djupaste natten. Sömn, eller vaka och útiseta.'],[3,'Ótta','ottan','Den tidiga gryningstiden, då man vakade och bad.'],
+ [6,'Rismál','uppstigandet','Uppstigandet. Andning, toning och morgonens ritual.'],[9,'Dagmál','dagmålet','Dagvarden: dagens första riktiga mål, sedan dagsverket.'],
+ [12,'Hádegi','högdagen','Solen står i söder. Dagens mitt och höjd.'],[15,'Nón','nonen','Eftermiddagens vila och mål, sedan arbetets andra hälft.'],
+ [18,'Miðr aftann','mitt i aftonen','Arbetet läggs ner. Aftonen börjar.'],[21,'Náttmál','nattmålet','Kvällsvarden och nattens förberedelse.']];
+// Kroppens dygnsrytm (cirkadisk forskning och funktionsmedicin)
+const KROPP=[[21,23,'Melatonin','#7A6FA8','Melatoninet stiger när ljuset dämpas. Släck skärmar och starka lampor, varmt och lågt ljus.'],
+ [23,3,'Djupsömn','#4F5B8A','Djupsömnen är som störst tidigt på natten: tillväxthormon, cellreparation och hjärnans rening.'],
+ [3,6,'Lågtemp','#5E7FA0','Kroppstemperaturen är som lägst runt 04–05. Drömsömnen ökar mot morgonen.'],
+ [6,9,'Kortisol','#C2A86E','Kortisolet toppar inom en timme efter uppvaknandet. Dagsljus i ögonen tidigt sätter hela klockan.'],
+ [9,12,'Skärpa','#E8C26A','Högst vakenhet och bäst insulinkänslighet. Fokuserat arbete, och dagens största måltid helst tidigt.'],
+ [12,15,'Dippen','#9AA4B1','Eftermiddagsdippen. En kort vila, en promenad i dagsljus, inget tungt.'],
+ [15,18,'Styrka','#C2563E','Bäst koordination och reaktionstid, nära toppen av styrka och kroppstemperatur. Träningens tid.'],
+ [18,21,'Skymning','#C77A4A','Kroppstemperaturen når sin topp och börjar sjunka. Sista målet gärna tre timmar före sömnen.']];
+function inSpan(t,a,b){a=(a+24)%24;b=(b+24)%24;return a<b?(t>=a&&t<b):(t>=a||t<b)}
+function hm(x){x=((x%24)+24)%24;let H=Math.floor(x),M=Math.round((x-H)*60);if(M==60){H=(H+1)%24;M=0}return String(H).padStart(2,'0')+'.'+String(M).padStart(2,'0')}
+function dygn(){
+ const now=new Date(), t=now.getHours()+now.getMinutes()/60, f=v=>v.toFixed(1), STONE='#D6CAA6';
+ const P=(deg,r)=>{const a=(deg-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]};
+ const arc=(h0,h1,r0,r1)=>{h0=(h0+24)%24;h1=(h1+24)%24;const a0=h0*15,a1=(h1<=h0?h1+24:h1)*15,pts=[];for(let k=0;k<=12;k++)pts.push(P(a0+(a1-a0)*k/12,r1));for(let k=12;k>=0;k--)pts.push(P(a0+(a1-a0)*k/12,r0));return 'M'+pts.map(p=>f(p[0])+' '+f(p[1])).join('L')+'z'};
+ const seg=(h0,h1,r0,r1,col,on)=>`<path d="${arc(h0,h1,r0,r1)}" fill="${col}" fill-opacity="${on?.55:.17}" stroke="${on?'#E8C26A':'#07090C'}" stroke-width="${on?1.3:.9}"/>`;
+ const lab=(hc,r,txt,on,sz,fam)=>{const [x,y]=P(hc*15,r);return `<text x="${f(x)}" y="${f(y+sz*.36)}" text-anchor="middle" fill="${on?'#F1E6C8':'#AEB5BE'}" font-size="${sz}" font-family="${fam||'Jost,sans-serif'}">${txt}</text>`};
+ const L=loc(), PT=planTimmar(now), sol=PT?PT.sol:solDag(now,L.lat,L.lon), off=sol.noon-12;
+ const cT=tcmAt(t), cD=doshaAt(t), cK=KROPP.find(k=>inSpan(t,k[0],k[1])), cE=EYKT.find(e=>inSpan(t,e[0]+off-1.5,e[0]+off+1.5)), cP=PT?PT.timmar.find(x=>inSpan(t,x.a,x.b)):null;
+ let g='';
+ // kroppen 62–78
+ KROPP.forEach(k=>{const on=k===cK;g+=seg(k[0],k[1],62,78,k[3],on);g+=lab((k[0]+((k[1]-k[0]+24)%24)/2),70,k[2],on,6.8)});
+ // doshor 82–96
+ DOSHA.forEach(x=>{const on=x===cD;g+=seg(x[0],x[0]+4,82,96,x[3],on);g+=lab(x[0]+2,89,x[1],on,7.6)});
+ // organ 100–118
+ TCM.forEach(x=>{const on=x===cT;g+=seg(x[0],x[0]+2,100,118,TCMC[x[2]],on);g+=lab(x[0]+1,109,x[1].replace('Trippelvärmaren','Trippelv.').replace('Hjärtsäcken','Hjärtsäck').replace('Tjocktarmen','Tjocktarm').replace('Gallblåsan','Gallblåsa'),on,6.6)});
+ // eyktir 122–136, efter solens gång
+ EYKT.forEach(e=>{const on=e===cE;g+=seg(e[0]+off-1.5,e[0]+off+1.5,122,136,'#D6CAA6',on);g+=lab(e[0]+off,129,e[1],on,7.2)});
+ // planettimmar 140–154
+ if(PT)PT.timmar.forEach(x=>{const on=x===cP;g+=seg(x.a,x.b,140,154,x.p[4],on);const m=(x.a+x.b)/2;g+=lab(m,147,x.p[2],on,9.5,"'Noto Sans Runic',serif")});
+ // stenkorset i mitten
+ g+=`<circle r="54" fill="none" stroke="${STONE}" stroke-width="5"/>`;
+ [0,90,180,270].forEach(d=>{const [x1,y1]=P(d,9),[x2,y2]=P(d,54);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="${STONE}" stroke-width="4.5" stroke-linecap="round"/>`});
+ g+=`<circle r="8.5" fill="#07090C" stroke="${STONE}" stroke-width="3.5"/>`;
+ [45,135,225,315].forEach(d=>{const [x,y]=P(d,30);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="4.5" fill="${STONE}"/>`});
+ // timprickar, soluppgång och solnedgång
+ for(let i=0;i<24;i++){const [x,y]=P(i*15,161);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="${i%6===0?2:i%3===0?1.4:.9}" fill="${i%3===0?'#7C8794':'#4A5260'}"/>`;
+  if(i%6===0){const [lx,ly]=P(i*15,173);g+=`<text x="${f(lx)}" y="${f(ly+3)}" text-anchor="middle" fill="#9AA4B1" font-size="9" font-family="Jost,sans-serif">${String(i).padStart(2,'0')}</text>`}}
+ if(sol.rise!=null)[[sol.rise,'▲'],[sol.set,'▼']].forEach(([s,c])=>{const [x,y]=P(s*15,161);g+=`<text x="${f(x)}" y="${f(y+2.6)}" text-anchor="middle" fill="#E8C26A" font-size="7">${c}</text>`});
+ const [sx,sy]=P(t*15,161);for(let k=0;k<8;k++)g+=`<path d="M${f(sx+6*Math.cos(k*Math.PI/4))} ${f(sy+6*Math.sin(k*Math.PI/4))}L${f(sx+9*Math.cos(k*Math.PI/4))} ${f(sy+9*Math.sin(k*Math.PI/4))}" stroke="#E8C26A" stroke-width="1.1" stroke-linecap="round"/>`;
+ g+=`<circle cx="${f(sx)}" cy="${f(sy)}" r="4.6" fill="#E8C26A"/>`;
+ const klock=hm(t).replace('.',':');
+ const nu=(namn,tag,col,txt)=>`<p style="margin:10px 0 0"><span class="serif" style="font-size:20px;color:var(--cream)">${namn}</span> <span class="small" style="color:${col}">${tag}</span></p><p class="small" style="margin:2px 0 0">${txt}</p>`;
+ const plist=PT?PT.timmar.map(x=>{const on=x===cP;return `<div class="row" style="padding:5px 0;border-bottom:1px solid var(--line2);${on?'background:rgba(232,194,106,.07)':''}"><span class="small" style="color:${on?'var(--gold)':'var(--muted)'}">${hm(x.a)}–${hm(x.b)}${x.natt?' ☾':''}</span><span><span class="rune" style="color:${x.p[4]}">${x.p[2]}</span> <span style="color:var(--cream)">${x.p[1]} ${x.p[0]}</span></span></div>`}).join(''):'<p class="muted small">Solen går inte upp eller ner här i dag, så planettimmarna kan inte räknas.</p>';
+ const list=TCM.slice().sort((a,b)=>((a[0]+1)%24)-((b[0]+1)%24)).map(x=>{const on=x===cT;const d=doshaAt(x[0]+0.5),k=KROPP.find(k=>inSpan(x[0]+1,k[0],k[1]));
+  return `<div style="padding:10px 0;border-bottom:1px solid var(--line2);${on?'background:rgba(232,194,106,.06)':''}"><div class="row"><span><span style="font-family:var(--label);font-size:12px;color:${on?'var(--gold)':'var(--muted)'}">${String(x[0]).padStart(2,'0')}–${String((x[0]+2)%24).padStart(2,'0')}</span> <span class="serif" style="font-size:18px;color:var(--cream)">${x[1]}</span></span><span class="small" style="color:${TCMC[x[2]]}">${x[2]}</span></div>
+  <p class="muted small" style="margin:2px 0 0">${x[3]}</p><p class="small" style="margin:2px 0 0"><span style="color:${d[3]}">${d[1]}</span> · <span style="color:${k[3]}">${k[2]}</span></p></div>`}).join('');
+ const elist=EYKT.map(e=>`<div class="row" style="padding:5px 0;border-bottom:1px solid var(--line2);${e===cE?'background:rgba(232,194,106,.07)':''}"><span class="small" style="color:${e===cE?'var(--gold)':'var(--muted)'}">kring ${hm(e[0]+off)}</span><span style="color:var(--cream)">${e[1]} <span class="muted small">${e[2]}</span></span></div>`).join('');
+ const klist=KROPP.map(k=>`<div style="padding:7px 0;border-bottom:1px solid var(--line2);${k===cK?'background:rgba(232,194,106,.07)':''}"><div class="row"><span class="small" style="color:${k===cK?'var(--gold)':'var(--muted)'}">${String(k[0]).padStart(2,'0')}–${String(k[1]).padStart(2,'0')}</span><span style="color:${k[3]}">${k[2]}</span></div><p class="muted small" style="margin:2px 0 0">${k[4]}</p></div>`).join('');
+ const ring=(c,n)=>`<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c};margin-right:5px"></span>${n}`;
+ return `<div class="head"><div><p class="lbl" style="color:var(--gold)">Härden</p><h1>Dygnet</h1><p class="muted small" style="margin:4px 0 0">Från kroppen i mitten ut mot himlen</p></div>${back('harden')}</div>
+ <div class="${fresh?'zoomin':''}" style="margin:0 -16px 12px"><svg width="100%" viewBox="-182 -182 364 364" style="display:block;height:auto" role="img" aria-label="Dygnets hjul med fem ringar, klockan ${klock}">${g}</svg></div>
+ <div class="p"><p class="serif" style="text-align:center;margin:0;font-size:22px;color:var(--cream)">${klock}</p>
+ <p class="muted small" style="text-align:center;margin:2px 0 6px">${sol.rise!=null?`Sol upp ${hm(sol.rise)} · högdag ${hm(sol.noon)} · sol ner ${hm(sol.set)} · ${L.namn}`:L.namn}</p>
+ <p class="small" style="margin:0;line-height:1.9;color:var(--muted)">Inifrån: ${ring('#C2A86E','kroppen')} ${ring('#B9A3D9','doshorna')} ${ring('#7FA36A','organen')} ${ring('#D6CAA6','eyktirna')} ${ring('#E8C26A','planettimmarna')}</p></div>
+ <div class="p" style="border-color:#4A4130"><p class="lbl">Just nu</p>
+ ${cP?nu(cP.p[1]+' '+cP.p[0]+'s timme','<span class="rune">'+cP.p[2]+'</span> '+cP.p[3]+' · planettimmen',cP.p[4],cP.p[5].replace(/^[^:]+: /,'')):''}
+ ${cE?nu(cE[1],cE[2]+' · eykten','#D6CAA6',cE[3]):''}
+ ${nu(cT[1],cT[2]+' · organklockan',TCMC[cT[2]],cT[3])}
+ ${nu(cD[1],cD[2]+' · ayurveda',cD[3],cD[4])}
+ ${nu(cK[2],'kroppens dygnsrytm',cK[3],cK[4])}</div>
+ <div class="p"><p class="lbl">Dagens planettimmar</p><p class="muted small" style="margin:0 0 6px">Ojämna timmar: dagen och natten delas var för sig i tolv. ☾ är nattens timmar.</p>${plist}</div>
+ <div class="p"><p class="lbl">Eyktirna</p><p class="muted small" style="margin:0 0 6px">Gårdens tid, efter var solen står i dag.</p>${elist}</div>
+ <div class="p"><p class="lbl">Kroppens dygnsrytm</p><p class="muted small" style="margin:0 0 6px">Ungefärliga tider för en som sover ca 22.30–06.30. Kvällsmänniskor ligger en till två timmar senare.</p>${klist}</div>
+ <div class="p"><p class="lbl">Organen och doshorna</p>${list}</div>
+ <div class="p"><p class="lbl">Platsen</p><form data-loc class="row" style="gap:6px;flex-wrap:wrap"><input name="namn" value="${L.namn}" aria-label="Ort" style="flex:2;min-width:110px"><input name="lat" value="${L.lat}" inputmode="decimal" aria-label="Latitud" style="flex:1;min-width:64px"><input name="lon" value="${L.lon}" inputmode="decimal" aria-label="Longitud" style="flex:1;min-width:64px"><button class="btn" type="submit">Spara</button></form><p class="muted small" style="margin:6px 0 0">Ort, latitud och longitud. Solens tider, eyktirna och planettimmarna räknas härifrån.</p></div>
+ <div class="p"><p class="lbl">Om klockorna</p><p class="muted small" style="margin:0">Planettimmarna kommer ur babylonisk och hellenistisk astrologi. Varje timme styrs av en av de sju planeterna i kaldeisk ordning, och dagens planet styr dess första timme; därför heter veckodagarna som de gör. Runorna i ringen är dagarnas runor. Eyktirna är de fornnordiska dagsmärkena ur Grágás och Snorre, lästa efter solens läge över landskapet. Organklockan kommer ur kinesisk läkekonst och doshornas klocka ur ayurveda. Dessa fyra är traditionell kunskap och astrologi, inte medicin. Kroppens dygnsrytm bygger på kronobiologisk forskning; tiderna är medelvärden och skiftar med kronotyp och årstid.</p></div>`;
+}
+// ---------- Timglaset ----------
+const TPRE={
+ stilla:{n:'Tystnad',d:'Meditation',el:'eter',act:'meditation',kind:'ned',durs:[5,10,20,30],dur:10,bell:5},
+ andning:{n:'Andning',d:'Rytmisk andning',el:'luft',act:'andning',kind:'andning',durs:[3,5,10,15],dur:5,rytm:0},
+ intervall:{n:'Intervall',d:'Sprint och kamp',el:'eld',act:'sprint',kind:'intervall',as:[20,30,45],vs:[10,15,20,25,30,35,45,60,90,120],rs:[4,6,8],a:30,v:90,r:6},
+ vila:{n:'Vila',d:'Mellan seten',el:'eld',act:null,kind:'ned',durs:[1,1.5,2,3],dur:2,bell:0},
+ kyla:{n:'Kyla och värme',d:'Kallbad och bastu',el:'vatten',act:null,kind:'upp'}};
+const RYTM=[['Lugn','in 4 · ut 6',[4,0,6,0]],['Fyrkant','4 · 4 · 4 · 4',[4,4,4,4]],['Resonans','in 5½ · ut 5½',[5.5,0,5.5,0]],['Sömn','4 · 7 · 8',[4,7,8,0]]];
+let tSel='stilla', T={run:false,start:0,acc:0,fin:false,last:''}, AC=null, WL=null;
+const mmss=(s,up)=>{s=Math.max(0,up?Math.floor(s):Math.ceil(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function tEl(){return T.run?T.acc+(Date.now()-T.start)/1000:T.acc}
+function tTot(){const p=TPRE[tSel];return p.kind==='upp'?Infinity:p.kind==='intervall'?p.r*p.a+(p.r-1)*p.v:p.dur*60}
+function tPhase(e){const p=TPRE[tSel],tot=tTot();
+ if(p.kind==='upp')return {lbl:mmss(e,1),sub:e<1?'Tryck på start när du går i':'minut '+(Math.floor(e/60)+1),frac:(e%60)/60,key:'m'+Math.floor(e/60)};
+ if(p.kind==='andning'){const pat=RYTM[p.rytm][2],cyc=pat.reduce((a,b)=>a+b,0);let t=e%cyc,i=0;while(i<3&&t>=pat[i]){t-=pat[i];i++}
+  const len=pat[i]||1,sc=i===0?.55+.45*t/len:i===1?1:i===2?1-.45*t/len:.55;
+  return {lbl:e<=0&&!T.run?mmss(tot):['Andas in','Håll','Andas ut','Håll'][i],sub:(T.run||e>0)?mmss(tot-e)+' kvar':RYTM[p.rytm][0]+' · '+RYTM[p.rytm][1],frac:e/tot,sc,key:'b'+i};}
+ if(p.kind==='intervall'){const per=p.a+p.v,k=Math.min(p.r-1,Math.floor(e/per)),w=e-k*per,arb=w<p.a;
+  return {lbl:mmss(arb?p.a-w:per-w),sub:(arb?'Arbete':'Vila')+' · runda '+(k+1)+' av '+p.r,frac:e/tot,key:(arb?'a':'v')+k};}
+ return {lbl:mmss(tot-e),sub:p.bell&&(T.run||e>0)?'klocka var '+p.bell+':e minut':'',frac:e/tot,key:p.bell?'k'+Math.floor(e/(p.bell*60)):'k'};
+}
+function ljud(f,len,vol){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();
+ const t0=AC.currentTime,g=AC.createGain();g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol||.3,t0+0.015);g.gain.exponentialRampToValueAtTime(0.0001,t0+(len||5));g.connect(AC.destination);
+ [[1,1],[2.76,.45],[5.4,.2],[8.93,.08]].forEach(([m,a])=>{const o=AC.createOscillator(),og=AC.createGain();o.frequency.value=(f||196)*m;og.gain.value=a;o.connect(og);og.connect(g);o.start(t0);o.stop(t0+(len||5))})}catch(e){}}
+function gong(){ljud(146.8,7,.35)}
+function klocka(hi){ljud(hi?587:392,2.2,.18)}
+async function vaka(on){try{if(on&&navigator.wakeLock&&!WL)WL=await navigator.wakeLock.request('screen');if(!on&&WL){await WL.release();WL=null}}catch(e){}}
+function tTick(){
+ const mini=document.getElementById('tg-mini');
+ if(!T.run){return}
+ const e=tEl(),tot=tTot(),p=TPRE[tSel];
+ if(e>=tot){T.acc=tot;T.run=false;T.fin=true;gong();if(navigator.vibrate)navigator.vibrate([300,150,300]);vaka(false);render();return}
+ const ph=tPhase(e);
+ if(ph.key!==T.last){if(T.last!==''){if(p.kind==='intervall')klocka(ph.key[0]==='a');else if(p.kind==='ned'&&p.bell)klocka(false);else if(p.kind==='upp')klocka(false)}T.last=ph.key}
+ const C=2*Math.PI*92,set=(id,f)=>{const el=document.getElementById(id);if(el)f(el)};
+ set('tg-ring',el=>el.setAttribute('stroke-dashoffset',(C*(1-Math.min(1,ph.frac))).toFixed(1)));
+ set('tg-lbl',el=>el.textContent=ph.lbl);set('tg-sub',el=>el.textContent=ph.sub);
+ if(ph.sc!==undefined)set('tg-andas',el=>el.setAttribute('r',(70*ph.sc).toFixed(1)));
+ if(mini)mini.textContent=p.kind==='upp'?mmss(e,1):mmss(tot-e);
+}
+setInterval(tTick,200);
+function tReset(){T={run:false,start:0,acc:0,fin:false,last:''};vaka(false)}
+const TIMGLAS_IKON=(s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12M6 21.5h12M7.5 2.5c0 5 3 6.5 4.5 9.5 1.5-3 4.5-4.5 4.5-9.5M7.5 21.5c0-5 3-6.5 4.5-9.5 1.5 3 4.5 4.5 4.5 9.5"/><path d="M10 19.5h4" stroke-width="2"/></svg>`;
+function timglas(){
+ const p=TPRE[tSel],col=`var(--${p.el})`,e=tEl(),tot=tTot(),ph=tPhase(e),C=2*Math.PI*92,dag=today();
+ const chip=(attr,val,on,txt)=>`<button class="chip" data-tset="${attr}:${val}" style="${on?`border-color:${col};color:var(--cream)`:''}">${txt}</button>`;
+ let set='';
+ if(p.kind==='ned'||p.kind==='andning')set+=`<p class="lbl" style="margin:0">Längd</p><div class="chips" style="margin-top:6px">${p.durs.map(d=>chip('dur',d,p.dur===d,(d<2&&tSel==='vila'?(d*60)+' s':d+' min'))).join('')}</div>`;
+ if(p.kind==='ned'&&tSel==='stilla')set+=`<p class="lbl" style="margin:12px 0 0">Mellanklocka</p><div class="chips" style="margin-top:6px">${[0,5,10].map(b=>chip('bell',b,p.bell===b,b?'var '+b+':e min':'ingen')).join('')}</div>`;
+ if(p.kind==='andning')set+=`<p class="lbl" style="margin:12px 0 0">Rytm</p><div class="chips" style="margin-top:6px">${RYTM.map((r,i)=>chip('rytm',i,p.rytm===i,r[0]+' <span class="muted small">'+r[1]+'</span>')).join('')}</div>`;
+ if(p.kind==='intervall')set+=`<p class="lbl" style="margin:0">Arbete</p><div class="chips" style="margin-top:6px">${p.as.map(x=>chip('a',x,p.a===x,x+' s')).join('')}</div><p class="lbl" style="margin:12px 0 0">Vila</p><div class="chips" style="margin-top:6px">${p.vs.map(x=>chip('v',x,p.v===x,x+' s')).join('')}</div><p class="lbl" style="margin:12px 0 0">Rundor</p><div class="chips" style="margin-top:6px">${p.rs.map(x=>chip('r',x,p.r===x,x)).join('')}</div>`;
+ if(p.kind==='upp')set+=`<p class="muted small" style="margin:0">Klockan räknar uppåt och klingar varje hel minut. Tryck klar när du stiger upp.</p>`;
+ let g=`<circle r="92" fill="none" stroke="#1A2028" stroke-width="9"/>`;
+ if(p.kind==='andning')g+=`<circle id="tg-andas" r="${(70*(ph.sc||.55)).toFixed(1)}" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-opacity=".6" stroke-width="1.2"/>`;
+ g+=`<circle id="tg-ring" r="92" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-Math.min(1,ph.frac))).toFixed(1)}" transform="rotate(-90)"/>`;
+ for(let i=0;i<12;i++){const a=i*Math.PI/6;g+=`<circle cx="${(106*Math.sin(a)).toFixed(1)}" cy="${(-106*Math.cos(a)).toFixed(1)}" r="${i%3?1:1.8}" fill="#4A5260"/>`}
+ g+=`<text id="tg-lbl" y="10" text-anchor="middle" fill="#F1E6C8" font-size="${p.kind==='andning'&&(T.run||e>0)?26:38}" font-family="'Cormorant Garamond',Georgia,serif">${ph.lbl}</text><text id="tg-sub" y="36" text-anchor="middle" fill="#9AA4B1" font-size="11" font-family="Jost,sans-serif">${ph.sub}</text>`;
+ const ctl=T.fin?`<button class="btn" data-tctl="reset" style="flex:1">Börja om</button>`:`<button class="btn" data-tctl="go" style="flex:2;border-color:${col};color:var(--cream)">${T.run?'Paus':e>0?'Fortsätt':'Börja'}</button>${p.kind==='upp'&&(T.run||e>0)?`<button class="btn" data-tctl="klar" style="flex:1">Klar</button>`:''}<button class="btn" data-tctl="reset" style="flex:1">Nollställ</button>`;
+ const acts=p.kind==='upp'?['kallbad','bastu']:p.act?[p.act]:[];
+ const logg=T.fin&&acts.length?`<div class="p" style="border-color:${col}"><p class="lbl" style="color:${col}">Fullbordat · ${mmss(e,1)}</p>${acts.map(a=>done(a,dag)?`<p class="small" style="margin:6px 0 0">✓ ${ACTS[a].n} är redan inskriven i dag.</p>`:`<button class="btn" data-tlog="${a}" style="width:100%;margin-top:6px">Skriv in: ${ACTS[a].n} · +${Object.values(ACTS[a].e).reduce((x,y)=>x+y,0)} dagg</button>`).join('')}</div>`:'';
+ return `<div class="head"><div><p class="lbl" style="color:${col}">Härden</p><h1>Timglaset</h1><p class="muted small" style="margin:4px 0 0">${p.n} · ${p.d}</p></div>${back('harden')}</div>
+ <div class="chips" style="margin:0 0 12px">${Object.entries(TPRE).map(([k,x])=>`<button class="chip" data-tpre="${k}" style="${k===tSel?`border-color:var(--${x.el});color:var(--cream)`:''}">${x.n}</button>`).join('')}</div>
+ <div style="margin:0 -16px"><svg width="100%" viewBox="-120 -120 240 240" style="display:block;height:auto;max-height:360px" role="timer" aria-label="${p.n}">${g}</svg></div>
+ <div class="row" style="gap:8px;margin:8px 0 12px">${ctl}</div>${logg}
+ <div class="p">${set}</div>
+ <p class="muted small" style="margin:0 0 12px">Skärmen hålls vaken medan klockan går. Ljudet kräver att telefonen inte står på ljudlöst.</p>`;
+}
+// ---------- Kodexen ----------
+const FUTHARK=[['ᚠ','Fehu','fä och rikedom'],['ᚢ','Uruz','uroxen och urkraften'],['ᚦ','Thurisaz','tursen och Tors kraft'],['ᚨ','Ansuz','asen: Oden och ordet'],['ᚱ','Raidho','ritten och färden'],['ᚲ','Kenaz','facklan och kunnandet'],['ᚷ','Gebo','gåvan'],['ᚹ','Wunjo','glädjen'],
+ ['ᚺ','Hagalaz','haglet'],['ᚾ','Naudiz','nöden'],['ᛁ','Isa','isen'],['ᛃ','Jera','året och skörden'],['ᛇ','Eihwaz','idegranen'],['ᛈ','Perthro','okänd betydelse, ofta tolkad som lottkoppen'],['ᛉ','Algiz','älgen och skyddet'],['ᛋ','Sowilo','solen'],
+ ['ᛏ','Tiwaz','Tyr'],['ᛒ','Berkano','björken'],['ᛖ','Ehwaz','hästen'],['ᛗ','Mannaz','människan'],['ᛚ','Laguz','vattnet och sjön'],['ᛜ','Ingwaz','Ing, det vill säga Frej'],['ᛞ','Dagaz','dagen'],['ᛟ','Othala','odalen och arvejorden']];
+let kBok=null,kPost=null,kSkriv=false;
+const cap=s=>s?s[0].toUpperCase()+s.slice(1):s;
+function kodexBocker(){
+ const egna=b=>(S.kodex||[]).filter(x=>x.bok===b).map(x=>({t:esc(x.titel),s:'✎',x:esc(x.text).replace(/\n/g,'<br>'),id:x.id}));
+ const B=[];
+ B.push({id:'runor',n:'Runorna',d:'Den äldre futharken i tre ätter',ic:'ᚠ',not:'Namnen är rekonstruerade urnordiska former. Betydelserna bygger på runornas namn och de medeltida runkvädena; mycket i modern runlära är senare tolkning.',
+  poster:FUTHARK.map((r,i)=>{const dg=RUNES.findIndex(x=>x[0]===r[0]),hl=Object.entries(HRUNE).filter(([k,v])=>v[0]===r[0]).map(([k])=>k);
+   return {t:r[1],s:r[0],x:`<p>${['Frejs','Hagals','Tyrs'][Math.floor(i/8)]} ätt, runa ${i%8+1} av 8.</p><p>${cap(r[2])}.</p>${dg>=0?`<p>Dagens runa på ${ARK[dg].d}: ${RINFO[dg].m}</p><p><i>${RINFO[dg].k}</i> – ${RINFO[dg].ks}.</p>`:''}${hl.length?`<p>Högtidens runa: ${hl.join(', ')}.</p>`:''}`}})});
+ B.push({id:'dagar',n:'Dagarna',d:'Veckans sju arketyper',ic:'ᛞ',poster:ARK.map((A,i)=>({t:cap(A.d)+' · '+A.ark,s:RUNES[i][0],x:`<p>${cap(A.k)}.</p><p>${A.pl} · ${A.gud} · ${META[i][0]} · ${SLAGN[A.slag]==='eter'?'eterdag':SLAGN[A.slag]+' dag'} · ${A.kost}</p><p><b>Dagens verk.</b> ${VERK[i]}</p><p><b>Namnet.</b> ${ETYM[i]}</p><p><b>Runan ${RUNES[i][1]}.</b> ${RINFO[i].m} <i>${RINFO[i].k}</i> – ${RINFO[i].ks}.</p><p><b>Kvällsfrågan.</b> ${A.q}</p>`}))});
+ B.push({id:'hogtider',n:'Högtiderna',d:'Årshjulets åtta',ic:'ᛟ',poster:HOL.map(x=>{const I=HOLINFO[x[0]];return {t:x[0],s:HRUNE[x[0]][0],x:`<p>${x[1]}. ${HRUNE[x[0]][1]}: ${HRUNE[x[0]][2]}.</p>${I?`<p>${I.t}</p>${I.r.map(([k,v])=>`<p><b>${k}.</b> ${v}</p>`).join('')}<p><b>Riter.</b></p>${I.s.map(s=>`<p>ᛉ ${s}</p>`).join('')}`:''}`}})});
+ B.push({id:'element',n:'Elementen',d:'De fem och deras lära',ic:'⊙',poster:ELORDER.concat(['eter']).filter((k,i,a)=>a.indexOf(k)===i).map(k=>({t:EL[k].n+' · '+EL[k].page,s:'',x:`<p>${cap(PAGE[k].sub)}. Platonsk kropp: ${SOLNAMN[k]}. Egenskap: ${LARA[k].q}.</p><p>${LARA[k].v}</p><p>Triangeln: − ${LARA[k].tri[0]} · + ${LARA[k].tri[1]} · ⊙ ${LARA[k].tri[2]}.</p>`}))});
+ B.push({id:'klockor',n:'Dygnets klockor',d:'Fem sätt att läsa dagen',ic:'◷',poster:[
+  {t:'Organklockan',s:'',x:'<p>Ur kinesisk läkekonst: varje organ har två timmar då dess kraft anses störst.</p>'+TCM.map(x=>`<p><b>${String(x[0]).padStart(2,'0')}–${String((x[0]+2)%24).padStart(2,'0')} ${x[1]}</b> (${x[2]}). ${x[3]}</p>`).join('')},
+  {t:'Doshornas klocka',s:'',x:'<p>Ur ayurveda: dygnet i två varv av kapha, pitta och vata.</p>'+DOSHA.map(x=>`<p><b>${String(x[0]).padStart(2,'0')}–${String((x[0]+4)%24).padStart(2,'0')} ${x[1]}</b> (${x[2]}). ${x[4]}</p>`).join('')},
+  {t:'Eyktirna',s:'',x:'<p>De fornnordiska dagsmärkena, lästa efter solens läge över landskapet.</p>'+EYKT.map(e=>`<p><b>Kring ${String(e[0]).padStart(2,'0')} ${e[1]}</b>, ${e[2]}. ${e[3]}</p>`).join('')},
+  {t:'Planettimmarna',s:'',x:'<p>Ur babylonisk och hellenistisk astrologi: dagen och natten delas var för sig i tolv ojämna timmar, styrda i kaldeisk ordning. Dagens planet styr dess första timme.</p>'+PLAN.map(p=>`<p><b>${p[1]} ${p[0]}</b> · ${p[3]} · <span class="rune">${p[2]}</span>. ${p[5].replace(/^[^:]+: /,'')}</p>`).join('')},
+  {t:'Kroppens dygnsrytm',s:'',x:'<p>Ur kronobiologin. Tiderna är medelvärden och skiftar med kronotyp och årstid.</p>'+KROPP.map(k=>`<p><b>${String(k[0]).padStart(2,'0')}–${String(k[1]).padStart(2,'0')} ${k[2]}.</b> ${k[4]}</p>`).join('')}]});
+ B.push({id:'havamal',n:'Hávamál',d:'Den höges sång',ic:'ᚨ',tom:'Här ska Hávamál skrivas in, strof för strof.',poster:[]});
+ B.push({id:'lakebok',n:'Läkeboken',d:'Övningarna och varför',ic:'✚',tom:'Här ska varje övning beskrivas: element, inre svar och källor.',poster:[]});
+ B.push({id:'egna',n:'Mina skrifter',d:'Det du själv skriver in',ic:'✎',tom:'Inget skrivet ännu.',poster:[]});
+ B.forEach(b=>{b.poster=b.poster.concat(egna(b.id))});
+ return B;
+}
+const SKRIFTRULLE=(s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||'#D9C98A'}" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3.5h11a2 2 0 0 1 0 4h-1.5"/><path d="M7 3.5a2 2 0 0 0-2 2v12"/><path d="M16.5 5.5v11.5"/><path d="M5 18.5a2 2 0 0 0 2 2h11a2 2 0 0 0 0-4H7a2 2 0 0 0-2 2z"/><path d="M8.5 9v4.5M8.5 9l2 1.2M8.5 11l2 1.2M12.5 9v4.5l1.6-2.2 1.6 2.2V9"/></svg>`;
+function kodex(){
+ const B=kodexBocker(), b=B.find(x=>x.id===kBok), po=b&&kPost!==null?b.poster[kPost]:null;
+ const head=(t,s,to)=>`<div class="head"><div><p class="lbl" style="color:var(--luft)">Luft · Ordet</p><h1>${t}</h1><p class="muted small" style="margin:4px 0 0">${s}</p></div>${to}</div>`;
+ const kback=`<button class="iconbtn" data-kback aria-label="Tillbaka" style="color:var(--muted)">✕</button>`;
+ if(po)return head(po.t,b.n,kback)+`<article class="p kodexblad">${po.s?`<p class="rune" style="font-size:56px;color:var(--gold);margin:0 0 6px;text-align:center">${po.s}</p>`:''}${po.x}${po.id?`<button class="btn" data-kdel="${po.id}" style="margin-top:10px">Stryk ur kodexen</button>`:''}</article>
+  <div class="row" style="margin:0 0 12px">${kPost>0?`<button class="btn" data-kpost="${kPost-1}">‹ ${b.poster[kPost-1].t.split(' · ')[0]}</button>`:'<span></span>'}${kPost<b.poster.length-1?`<button class="btn" data-kpost="${kPost+1}">${b.poster[kPost+1].t.split(' · ')[0]} ›</button>`:''}</div>`;
+ if(b)return head(b.n,b.d,kback)+`${b.not?`<p class="muted small" style="margin:0 0 12px">${b.not}</p>`:''}<div class="p">${b.poster.length?b.poster.map((x,i)=>`<button class="row" data-kpost="${i}" style="width:100%;background:none;border:none;border-bottom:1px solid var(--line2);color:inherit;font:inherit;text-align:left;padding:10px 0;min-height:44px"><span style="display:flex;align-items:center;gap:12px">${x.s?`<span class="rune" style="font-size:22px;width:26px;text-align:center;color:var(--gold)">${x.s}</span>`:''}<span class="serif" style="font-size:18px;color:var(--cream)">${x.t}</span></span><span class="muted">›</span></button>`).join(''):`<p class="muted small" style="margin:0">${b.tom||''}</p>`}</div>
+  ${kSkriv?`<form data-kform class="p"><p class="lbl">Skriv in i ${b.n.toLowerCase()}</p><input name="titel" placeholder="Rubrik" required style="margin-bottom:8px"><textarea name="text" rows="6" placeholder="Texten" required></textarea><div class="row" style="gap:8px;margin-top:8px"><button class="btn" type="submit" style="flex:1">Skriv in</button><button class="btn" type="button" data-kskriv style="flex:1">Avbryt</button></div></form>`:`<button class="add" data-kskriv>+ Skriv in i ${b.n.toLowerCase()}</button>`}`;
+ return head('Kodexen','Lärornas bok',back('luft'))+`<div class="grid2">${B.map(x=>`<button class="tile" data-kbok="${x.id}"><span class="${/[ᚠ-ᛰ]/.test(x.ic)?'rune':''}" style="font-size:28px;color:var(--gold);margin-bottom:auto;padding-bottom:6px">${x.ic}</span><span class="t">${x.n}</span><span class="d">${x.d}${x.poster.length?' · '+x.poster.length:''}</span></button>`).join('')}</div>`;
+}
+// ---------- Asatrologin: västerländsk astrologi, tropisk zodiak ----------
+const VS='︎';
+const PLANETER=[['sol','Solen','☉','väsen och vilja','Balder'],['mane','Månen','☽','känsla och behov','Måne'],['merk','Merkurius','☿','tanke och ord','Oden'],['ven','Venus','♀','kärlek och smak','Freja'],['mars','Mars','♂','kraft och begär','Tyr'],['jup','Jupiter','♃','växt och tro','Tor'],['sat','Saturnus','♄','gräns och plikt','Loke'],['ura','Uranus','♅','uppbrott och frihet',''],['nep','Neptunus','♆','dröm och upplösning','']];
+const TECKEN=[['eld','kardinal','Mars','mod, början, eld'],['jord','fast','Venus','uthållighet, sinnlighet, trygghet'],['luft','rörlig','Merkurius','nyfikenhet, ord, rörlighet'],['vatten','kardinal','Månen','omsorg, minne, hem'],['eld','fast','Solen','glans, hjärta, skapande'],['jord','rörlig','Merkurius','omsorg om det lilla, tjänst, ordning'],['luft','kardinal','Venus','jämvikt, skönhet, möten'],['vatten','fast','Mars','djup, förvandling, hemligheter'],['eld','rörlig','Jupiter','sökande, vidd, mening'],['jord','kardinal','Saturnus','ansvar, byggande, tålamod'],['luft','fast','Saturnus','frihet, framtid, gemenskap'],['vatten','rörlig','Jupiter','medkänsla, dröm, upplösning']];
+const ASP=[[0,'konjunktion','☌',8,'#E8C26A'],[60,'sextil','⚹',5,'#8FB3C9'],[90,'kvadrat','□',7,'#C2563E'],[120,'trigon','△',7,'#7FA36A'],[180,'opposition','☍',8,'#C2563E']];
+const BANOR={merk:[48.3313,3.24587e-5,7.0047,5e-8,29.1241,1.01444e-5,0.387098,0,0.205635,5.59e-10,168.6562,4.0923344368],
+ ven:[76.6799,2.4659e-5,3.3946,2.75e-8,54.891,1.38374e-5,0.72333,0,0.006773,-1.302e-9,48.0052,1.6021302244],
+ mars:[49.5574,2.11081e-5,1.8497,-1.78e-8,286.5016,2.92961e-5,1.523688,0,0.093405,2.516e-9,18.6021,0.5240207766],
+ jup:[100.4542,2.76854e-5,1.303,-1.557e-7,273.8777,1.64505e-5,5.20256,0,0.048498,4.469e-9,19.895,0.0830853001],
+ sat:[113.6634,2.3898e-5,2.4886,-1.081e-7,339.3939,2.97661e-5,9.55475,0,0.055546,-9.499e-9,316.967,0.0334442282],
+ ura:[74.0005,1.3978e-5,0.7733,1.9e-8,96.6612,3.0565e-5,19.18171,-1.55e-8,0.047318,7.45e-9,142.5905,0.011725806],
+ nep:[131.7806,3.0173e-5,1.77,-2.55e-7,272.8461,-6.027e-6,30.05826,3.313e-8,0.008606,2.15e-9,260.2471,0.005995147]};
+const n360=x=>((x%360)+360)%360;
+function himlaPos(date){
+ const d=jd(date)-2451543.5,R=Math.PI/180,sin=x=>Math.sin(x*R),cos=x=>Math.cos(x*R);
+ const ws=282.9404+4.70935e-5*d,es=0.016709-1.151e-9*d,Ms=n360(356.047+0.9856002585*d);
+ let E=Ms+es/R*sin(Ms)*(1+es*cos(Ms));const xv0=cos(E)-es,yv0=Math.sqrt(1-es*es)*sin(E),vs=Math.atan2(yv0,xv0)/R,rs=Math.hypot(xv0,yv0),ls=n360(vs+ws);
+ const xs=rs*cos(ls),ys=rs*sin(ls),out={sol:ls,mane:n360(moonPos(date).lon)};
+ const Mj=n360(19.895+0.0830853001*d),Msa=n360(316.967+0.0334442282*d),Mu=n360(142.5905+0.011725806*d);
+ for(const k in BANOR){const b=BANOR[k],N=b[0]+b[1]*d,i=b[2]+b[3]*d,w=b[4]+b[5]*d,a=b[6]+b[7]*d,e=b[8]+b[9]*d,M=n360(b[10]+b[11]*d);
+  let Ek=M+e/R*sin(M)*(1+e*cos(M));for(let it=0;it<8;it++)Ek=Ek-(Ek-e/R*sin(Ek)-M)/(1-e*cos(Ek));
+  const xv=a*(cos(Ek)-e),yv=a*Math.sqrt(1-e*e)*sin(Ek),v=Math.atan2(yv,xv)/R,r=Math.hypot(xv,yv);
+  let xh=r*(cos(N)*cos(v+w)-sin(N)*sin(v+w)*cos(i)),yh=r*(sin(N)*cos(v+w)+cos(N)*sin(v+w)*cos(i)),zh=r*sin(v+w)*sin(i);
+  let lon=Math.atan2(yh,xh)/R,lat=Math.atan2(zh,Math.hypot(xh,yh))/R;
+  if(k==='jup')lon+=-0.332*sin(2*Mj-5*Msa-67.6)-0.056*sin(2*Mj-2*Msa+21)+0.042*sin(3*Mj-5*Msa+21)-0.036*sin(Mj-2*Msa)+0.022*cos(Mj-Msa)+0.023*sin(2*Mj-3*Msa+52)-0.016*sin(Mj-5*Msa-69);
+  if(k==='sat'){lon+=0.812*sin(2*Mj-5*Msa-67.6)-0.229*cos(2*Mj-4*Msa-2)+0.119*sin(Mj-2*Msa-3)+0.046*sin(2*Mj-6*Msa-69)+0.014*sin(Mj-3*Msa+32);lat+=-0.02*cos(2*Mj-4*Msa-2)+0.018*sin(2*Mj-6*Msa-49)}
+  if(k==='ura')lon+=0.04*sin(Msa-2*Mu+6)+0.035*sin(Msa-3*Mu+33)-0.015*sin(Mj-Mu+20);
+  xh=r*cos(lon)*cos(lat);yh=r*sin(lon)*cos(lat);
+  out[k]=n360(Math.atan2(yh+ys,xh+xs)/R)}
+ return out;
+}
+function himlaFull(date){const p=himlaPos(date),q=himlaPos(new Date(+date+864e5)),o={};for(const k in p){let dl=q[k]-p[k];if(dl>180)dl-=360;if(dl<-180)dl+=360;o[k]={lon:p[k],retro:dl<0}}return o}
+function axlar(date,lat,lon){const R=Math.PI/180,d=jd(date)-2451545,eps=(23.4393-3.563e-7*(d+1.5))*R,th=n360(280.46061837+360.98564736629*d+lon)*R,ph=lat*R;
+ const asc=n360(Math.atan2(Math.cos(th),-(Math.sin(th)*Math.cos(eps)+Math.tan(ph)*Math.sin(eps)))/R),mc=n360(Math.atan2(Math.sin(th),Math.cos(th)*Math.cos(eps))/R);return {asc,mc}}
+const gradTxt=l=>`${Math.floor(l%30)}°${String(Math.floor((l%1)*60)).padStart(2,'0')}′`;
+const teckenTxt=l=>ZOD[zodOf(l)][0]+VS+' '+ZOD[zodOf(l)][1];
+function aspekter(A,B,orbAdd,maxOrb){const out=[];const ka=Object.keys(A),kb=Object.keys(B);
+ ka.forEach((a,ia)=>kb.forEach((b,ib)=>{if(A===B&&ib<=ia)return;let dd=Math.abs(A[a].lon-B[b].lon);if(dd>180)dd=360-dd;
+  ASP.forEach(x=>{const orb=Math.abs(dd-x[0]),lim=maxOrb!=null?maxOrb:x[3]+((a==='sol'||a==='mane'||b==='sol'||b==='mane')?orbAdd:0);if(orb<=lim)out.push({a,b,x,orb})})}));
+ return out.sort((p,q)=>p.orb-q.orb)}
+const PL=k=>PLANETER.find(p=>p[0]===k);
+function astroHjul(pos,ax,yttre){
+ const f=v=>v.toFixed(1),rot=ax?ax.asc:0,P=(lon,r)=>{const a=(180+(lon-rot))*Math.PI/180;return [r*Math.cos(a),-r*Math.sin(a)]};
+ const ELC={eld:'#D8834A',jord:'#7FA36A',luft:'#E8D27A',vatten:'#8FB3C9'};
+ let g=`<circle r="150" fill="none" stroke="#2A3340"/><circle r="122" fill="none" stroke="#2A3340"/><circle r="64" fill="none" stroke="#2A3340"/>`;
+ for(let s=0;s<12;s++){const [x1,y1]=P(s*30,122),[x2,y2]=P(s*30,150);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="#2A3340"/>`;
+  const a0=s*30,pts=[];for(let t=0;t<=10;t++)pts.push(P(a0+3*t,150));for(let t=10;t>=0;t--)pts.push(P(a0+3*t,122));
+  g+=`<path d="M${pts.map(p=>f(p[0])+' '+f(p[1])).join('L')}z" fill="${ELC[TECKEN[s][0]]}" fill-opacity=".08"/>`;
+  const [tx,ty]=P(s*30+15,136);g+=`<text x="${f(tx)}" y="${f(ty+5)}" text-anchor="middle" fill="${ELC[TECKEN[s][0]]}" font-size="14">${ZOD[s][0]}${VS}</text>`;
+  for(let k=1;k<6;k++){const [a1,b1]=P(s*30+k*5,122),[a2,b2]=P(s*30+k*5,126);g+=`<path d="M${f(a1)} ${f(b1)}L${f(a2)} ${f(b2)}" stroke="#3A4450" stroke-width=".6"/>`}}
+ if(ax){[[ax.asc,'AC'],[n360(ax.asc+180),'DC'],[ax.mc,'MC'],[n360(ax.mc+180),'IC']].forEach(([l,n])=>{const [x1,y1]=P(l,64),[x2,y2]=P(l,122),[tx,ty]=P(l,56);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="#E8C26A" stroke-width="${n==='AC'||n==='MC'?1.4:.7}" stroke-opacity=".8"/><text x="${f(tx)}" y="${f(ty+3)}" text-anchor="middle" fill="#E8C26A" font-size="8" font-family="Jost,sans-serif">${n}</text>`});
+  for(let hs=0;hs<12;hs++){const l=Math.floor(ax.asc/30)*30+hs*30,[tx,ty]=P(l+15,70);g+=`<text x="${f(tx)}" y="${f(ty+3)}" text-anchor="middle" fill="#4A5260" font-size="7" font-family="Jost,sans-serif">${hs+1}</text>`}}
+ const asp=aspekter(pos,pos,2);asp.filter(a=>a.x[0]>0).forEach(a=>{const [x1,y1]=P(pos[a.a].lon,62),[x2,y2]=P(pos[a.b].lon,62);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="${a.x[4]}" stroke-opacity="${Math.max(.15,.6-a.orb/14)}" stroke-width=".9"/>`});
+ const ks=Object.keys(pos).sort((a,b)=>pos[a].lon-pos[b].lon),vis={};let prev=-99;
+ ks.forEach(k=>{let l=pos[k].lon;if(l-prev<7)l=prev+7;vis[k]=l;prev=l});
+ ks.forEach(k=>{const [x,y]=P(vis[k],104),[mx,my]=P(pos[k].lon,121),[nx,ny]=P(vis[k],114);const p=PL(k);
+  g+=`<path d="M${f(mx)} ${f(my)}L${f(nx)} ${f(ny)}" stroke="#7C8794" stroke-width=".6"/><text x="${f(x)}" y="${f(y+5)}" text-anchor="middle" fill="#F1E6C8" font-size="14">${p[2]}${VS}</text>`;
+  if(pos[k].retro){const [rx,ry]=P(vis[k],90);g+=`<text x="${f(rx)}" y="${f(ry+3)}" text-anchor="middle" fill="#C2563E" font-size="7">℞</text>`}});
+ if(yttre)Object.keys(yttre).forEach(k=>{const [x,y]=P(yttre[k].lon,160);g+=`<text x="${f(x)}" y="${f(y+4)}" text-anchor="middle" fill="#E8C26A" fill-opacity=".75" font-size="10">${PL(k)[2]}${VS}</text>`});
+ return `<svg width="100%" viewBox="-172 -172 344 344" style="display:block;height:auto" role="img" aria-label="Astrologiskt hjul">${g}</svg>`;
+}
+function astro(){
+ const now=new Date(),nu=himlaFull(now),bd=S.birth?new Date(S.birth):null,har=bd&&!isNaN(bd),fo=har?himlaFull(bd):null,bl=S.birthLoc,ax=har&&bl?axlar(bd,bl.lat,bl.lon):null;
+ const rad=(k,p)=>{const pl=PL(k);return `<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line2)"><span><span style="font-size:17px;color:var(--cream)">${pl[2]}${VS}</span> ${pl[1]}${p.retro?' <span style="color:#C2563E">℞</span>':''}</span><span class="small" style="color:var(--cream)">${teckenTxt(p.lon)} <span class="muted">${gradTxt(p.lon)}</span></span></div>`};
+ let html=`<div class="head"><div><p class="lbl" style="color:var(--eter)">Eter</p><h1>Asatrologin</h1><p class="muted small" style="margin:4px 0 0">Himlen nu och himlen när du föddes</p></div>${back('eter')}</div>`;
+ if(har){const s=fo.sol,m=fo.mane;
+  html+=`<div class="p" style="border-color:#4A4130"><p class="lbl">Ditt födelsediagram</p>${astroHjul(fo,ax,nu)}
+  <div class="row" style="margin:8px 0 4px;gap:6px;text-align:center">${[['Sol',s.lon],['Måne',m.lon]].concat(ax?[['Ascendent',ax.asc]]:[]).map(([n,l])=>`<div style="flex:1"><p class="muted small" style="margin:0">${n}</p><p class="serif" style="margin:0;font-size:18px;color:var(--cream)">${ZOD[zodOf(l)][0]}${VS} ${ZOD[zodOf(l)][1]}</p></div>`).join('')}</div>
+  <p class="muted small" style="margin:6px 0 0">Guld utanför ringen: planeterna i dag. Linjerna inne i hjulet är aspekterna mellan dina planeter.${ax?' Husen är hela tecken, det äldsta hussystemet.':''}</p></div>`;
+  html+=`<div class="p"><p class="lbl">Planeterna när du föddes</p>${PLANETER.map(p=>rad(p[0],fo[p[0]])).join('')}${ax?`<div class="row" style="padding:6px 0"><span>AC Ascendenten</span><span class="small" style="color:var(--cream)">${teckenTxt(ax.asc)} <span class="muted">${gradTxt(ax.asc)}</span></span></div><div class="row" style="padding:6px 0"><span>MC Medium coeli</span><span class="small" style="color:var(--cream)">${teckenTxt(ax.mc)} <span class="muted">${gradTxt(ax.mc)}</span></span></div>`:''}</div>`;
+  const tr=aspekter(nu,fo,0,1.5).filter(t=>!(t.a==='mane'));
+  html+=`<div class="p"><p class="lbl">I dag, mot ditt diagram</p>${tr.length?tr.slice(0,8).map(t=>`<p class="small" style="margin:0 0 6px"><span style="color:${t.x[4]}">${t.x[2]}${VS}</span> ${PL(t.a)[1]} i dag ${t.x[1]} din ${PL(t.b)[1].toLowerCase()} <span class="muted">· orb ${t.orb.toFixed(1)}°</span></p>`).join(''):'<p class="muted small" style="margin:0">Inga snäva transiter i dag.</p>'}</div>`;
+  const na=aspekter(fo,fo,2).slice(0,10);
+  html+=`<div class="p"><p class="lbl">Aspekterna i ditt diagram</p>${na.map(t=>`<p class="small" style="margin:0 0 6px"><span style="color:${t.x[4]}">${t.x[2]}${VS}</span> ${PL(t.a)[1]} ${t.x[1]} ${PL(t.b)[1].toLowerCase()} <span class="muted">· ${t.orb.toFixed(1)}°</span></p>`).join('')}</div>`;
+  html+=`<div class="p"><p class="lbl">Tolkningens grund</p>${PLANETER.slice(0,7).map(p=>{const z=zodOf(fo[p[0]].lon),T=TECKEN[z];return `<p class="small" style="margin:0 0 8px"><span style="color:var(--cream)">${p[2]}${VS} ${p[1]} i ${ZOD[z][1]}</span>: din ${p[3]} uttrycks genom ${T[3]}. <span class="muted">${cap(T[0])} · ${T[1]} · härskare ${T[2]}</span></p>`}).join('')}</div>`;
+ }
+ html+=`<div class="p"><p class="lbl">Himlen nu</p>${har?'':astroHjul(nu,null,null)}${PLANETER.map(p=>rad(p[0],nu[p[0]])).join('')}</div>`;
+ html+=`<div class="p"><p class="lbl">Födelsen</p><p class="muted small" style="margin:0 0 6px">Tid och plats ger solen, månen, planeterna, ascendenten och husen.</p>
+  <label class="small muted" for="birthIn2">Födelsedag och klockslag (lokal tid där du föddes)</label><input id="birthIn2" type="datetime-local" data-birth value="${S.birth||''}" style="margin:6px 0 10px">
+  <form data-bloc class="row" style="gap:6px;flex-wrap:wrap"><input name="namn" placeholder="Födelseort" value="${bl?esc(bl.namn):''}" style="flex:2;min-width:110px"><input name="lat" placeholder="Lat" inputmode="decimal" value="${bl?bl.lat:''}" style="flex:1;min-width:60px"><input name="lon" placeholder="Long" inputmode="decimal" value="${bl?bl.lon:''}" style="flex:1;min-width:60px"><button class="btn" type="submit">Spara</button></form>
+  <p class="muted small" style="margin:6px 0 0">Latitud och longitud i grader, till exempel 59,33 och 18,07 för Stockholm. Tiden räknas i telefonens tidszon; är du född i en annan zon, ange klockslaget omräknat till svensk tid.</p></div>
+ <div class="p"><p class="lbl">Om asatrologin</p><p class="muted small" style="margin:0">Här börjar asatrologin i den västerländska astrologin: den tropiska zodiaken, där Väduren börjar vid vårdagjämningen, och hela tecken som hus. De sju klassiska planeterna är också veckans gudar: Solen och Balder, Månen och Måne, Merkurius och Oden, Venus och Freja, Mars och Tyr, Jupiter och Tor, Saturnus och Loke. Det nordiska lagret, med stjärnbilder som Friggs rock och Tjatses ögon, läggs till här. Positionerna räknas med förenklade banelement och stämmer på några bågminuter när. Astrologi är tradition och tolkningskonst, inte vetenskap.</p></div>`;
+ return html;
+}
+// ---------- Aktiveringssekvensen ----------
+const SEKV=[]; // stegen: {n:'namn', s:sekunder, d:'hur man gör'}
+let Q={run:false,i:0,start:0,acc:0,fin:false};
+const SOLUPP=(s,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||'#7FA36A'}" stroke-width="1.1" stroke-linecap="round" aria-hidden="true"><path d="M2.5 17.5h19M5 20.5h14"/><path d="M7 17.5a5 5 0 0 1 10 0"/><path d="M12 6v3M5.6 9.1l2 2M18.4 9.1l-2 2M3 13.5h2.5M18.5 13.5H21"/></svg>`;
+function qEl(){return Q.run?Q.acc+(Date.now()-Q.start)/1000:Q.acc}
+function qTick(){if(!Q.run||!SEKV.length)return;const st=SEKV[Q.i],e=qEl();
+ if(e>=st.s){if(Q.i>=SEKV.length-1){Q.run=false;Q.fin=true;Q.acc=st.s;gong();if(navigator.vibrate)navigator.vibrate([300,150,300]);vaka(false);render();return}
+  Q.i++;Q.acc=0;Q.start=Date.now();klocka(true);if(navigator.vibrate)navigator.vibrate(120);if(view==='sekvens')render();return}
+ const C=2*Math.PI*92,el=document.getElementById('sq-ring');if(el)el.setAttribute('stroke-dashoffset',(C*(1-e/st.s)).toFixed(1));
+ const t=document.getElementById('sq-tid');if(t)t.textContent=mmss(st.s-e)}
+setInterval(qTick,200);
+function sekvens(){
+ const tot=SEKV.reduce((a,x)=>a+x.s,0),dag=today();
+ const head=`<div class="head"><div><p class="lbl" style="color:var(--jord)">Jord</p><h1>Aktiveringssekvensen</h1><p class="muted small" style="margin:4px 0 0">Morgonens väckning av kroppen · ${SEKV.length?Math.round(tot/60)+' min · '+SEKV.length+' steg':'cirka 10 min'}</p></div>${back('jord')}</div>`;
+ if(!SEKV.length)return head+`<div class="p"><p class="small" style="margin:0">Stegen är inte inskrivna ännu: övningarna, stretcharna och lymfklappningarna, var och en med sin tid.</p></div>`;
+ if(Q.run||Q.acc>0||Q.fin){
+  const st=SEKV[Q.i],e=qEl(),C=2*Math.PI*92,nx=SEKV[Q.i+1];
+  if(Q.fin)return head+`<div class="p" style="border-color:var(--jord);text-align:center"><p class="serif" style="font-size:26px;color:var(--cream);margin:0">Kroppen är väckt</p><p class="muted small" style="margin:6px 0 12px">${SEKV.length} steg · ${mmss(tot,1)}</p>${done('aktivering',dag)?'<p class="small">✓ Inskriven i dag.</p>':'<button class="btn" data-qlog style="width:100%">Skriv in: Aktiveringssekvensen · +'+Object.values(ACTS.aktivering.e).reduce((a,b)=>a+b,0)+' dagg</button>'}<button class="btn" data-qctl="reset" style="width:100%;margin-top:8px">Tillbaka till stegen</button></div>`;
+  let g=`<circle r="92" fill="none" stroke="#1A2028" stroke-width="9"/><circle id="sq-ring" r="92" fill="none" stroke="var(--jord)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-e/st.s)).toFixed(1)}" transform="rotate(-90)"/>`;
+  SEKV.forEach((x,i)=>{const a=-Math.PI/2+2*Math.PI*i/SEKV.length;g+=`<circle cx="${(106*Math.cos(a)).toFixed(1)}" cy="${(106*Math.sin(a)).toFixed(1)}" r="${i===Q.i?3.2:2}" fill="${i<Q.i?'var(--jord)':i===Q.i?'#E8C26A':'#3A4450'}"/>`});
+  g+=`<text id="sq-tid" y="12" text-anchor="middle" fill="#F1E6C8" font-size="38" font-family="'Cormorant Garamond',Georgia,serif">${mmss(st.s-e)}</text><text y="36" text-anchor="middle" fill="#9AA4B1" font-size="11" font-family="Jost,sans-serif">steg ${Q.i+1} av ${SEKV.length}</text>`;
+  return head+`<p class="serif" style="text-align:center;font-size:26px;color:var(--cream);margin:0">${st.n}</p>
+  <div style="margin:0 -16px"><svg width="100%" viewBox="-120 -120 240 240" style="display:block;height:auto;max-height:320px" role="timer" aria-label="${st.n}">${g}</svg></div>
+  ${st.d?`<p class="small" style="text-align:center;margin:0 0 10px">${st.d}</p>`:''}
+  <div class="row" style="gap:8px;margin:0 0 10px"><button class="btn" data-qctl="prev" style="flex:1" aria-label="Föregående steg">‹</button><button class="btn" data-qctl="go" style="flex:2;border-color:var(--jord);color:var(--cream)">${Q.run?'Paus':'Fortsätt'}</button><button class="btn" data-qctl="next" style="flex:1" aria-label="Nästa steg">›</button></div>
+  <p class="muted small" style="text-align:center;margin:0 0 12px">${nx?'Sedan: '+nx.n+' · '+mmss(nx.s,1):'Sista steget'} · <button data-qctl="reset" style="background:none;border:none;color:var(--muted);text-decoration:underline;padding:0">avbryt</button></p>`;
+ }
+ return head+`<button class="btn" data-qctl="go" style="width:100%;margin-bottom:12px;border-color:var(--jord);color:var(--cream)">Börja sekvensen</button>
+ <div class="p">${SEKV.map((x,i)=>`<div style="padding:9px 0;border-bottom:1px solid var(--line2)"><div class="row"><span><span class="muted small">${i+1}.</span> <span style="color:var(--cream)">${x.n}</span></span><span class="muted small">${mmss(x.s,1)}</span></div>${x.d?`<p class="muted small" style="margin:2px 0 0">${x.d}</p>`:''}</div>`).join('')}</div>`;
+}
+let openL={};
+function miniBoxes(acts,day){return `<span class="mini" aria-hidden="true">${acts.map(a=>`<i class="${done(a,day)?'on':''}"></i>`).join('')}</span>`}
+function fold(key,title,acts,day,body){const n=acts.filter(a=>done(a,day)).length,op=!!openL[key];
+ return `<div class="p"><button class="foldh" data-fold="${key}" aria-expanded="${op}"><span class="lbl">${title}</span>${miniBoxes(acts,day)}<span class="muted small" style="white-space:nowrap">${n} av ${acts.length}</span><span class="chev">${op?'▴':'▾'}</span></button>${op?`<div style="margin-top:6px">${body}</div>`:''}</div>`}
+const ELTRI=k=>`<svg width="10" height="10" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-label="${EL[k].n}" style="vertical-align:-1px">${{jord:'<path d="M2 3h14L9 16z"/><path d="M4.5 7.5h9"/>',luft:'<path d="M9 2l7 13H2z"/><path d="M4.5 10.5h9"/>',eld:'<path d="M9 2l7 13H2z"/>',vatten:'<path d="M2 3h14L9 16z"/>',eter:'<circle cx="9" cy="9" r="6.5"/>'}[k]}</svg>`;
+function veckan(){
+ const ws=iso(weekStart()),wl=S.log.filter(l=>l.d>=ws&&ACTS[l.a]),per={jord:{},luft:{},eld:{},vatten:{},eter:{}};
+ wl.forEach(l=>Object.keys(ACTS[l.a].e).forEach(k=>{if(per[k])per[k][l.a]=(per[k][l.a]||0)+1}));
+ const n=k=>Object.values(per[k]).reduce((a,b)=>a+b,0),op=!!openL.v,ord=['eld','luft','vatten','jord','eter'];
+ return `<div class="p"><button class="foldh" data-fold="v" aria-expanded="${op}"><span class="lbl">Gjort denna vecka</span><span style="display:flex;gap:9px">${ord.map(k=>`<span style="color:var(--${k});font-size:13px" title="${EL[k].n}">${ELTRI(k)} ${n(k)}</span>`).join('')}</span><span class="muted small">${wl.length}</span><span class="chev">${op?'▴':'▾'}</span></button>
+ ${op?ord.map(k=>Object.keys(per[k]).length?`<p class="lbl" style="margin:10px 0 2px;color:var(--${k})">${EL[k].n}</p>${Object.entries(per[k]).map(([a,c])=>`<div class="row" style="min-height:26px"><span class="small">${esc(ACTS[a].n)}</span><span class="muted small">${c}</span></div>`).join('')}`:'').join('')||'<p class="muted small" style="margin:8px 0 0">Ännu ingenting denna vecka.</p>':''}</div>`;
+}
+function harden(){
+ ACTS.runa.n='Dagens runa: '+RUNES[new Date().getDay()][1];
+ const now=new Date(), wd=now.getDay(), A=ARK[wd], c=cal(now), day=today(), L=lists(wd);
+ if(!tabSel){const h=now.getHours();tabSel=h<11?'morgon':h<18?'dag':'kvall'}
+ const cnt=k=>L[k].filter(a=>done(a,day)).length+' av '+L[k].length;
+ const ws=weekStart(); let wk='';
+ for(let i=0;i<7;i++){const dots=DOTS(i).map(c=>c==='ring'?'<i style="border:1px solid var(--text)"></i>':`<i style="background:${c}"></i>`).join('');
+  wk+=`<button data-day="${i}" class="${i===wd?'on':''}" style="background:none;border:none;color:inherit;font:inherit;padding:6px 0;border-radius:4px;${i===wd?'border:1px solid var(--gold)':''}">${ARK[i].d.slice(0,3)}<div class="dots">${dots}</div></button>`}
+ const td=daggOf(S.log.filter(l=>l.d===day)); const tot=Object.values(td).reduce((a,b)=>a+b,0);
+ const extras=S.log.filter(l=>l.d===day&&l.x);
+ let html=`<div class="head"><div><p class="lbl" style="color:var(--gold)">Härden</p><div style="display:flex;align-items:center;gap:12px"><span class="rune" style="font-size:46px;color:var(--gold)" aria-label="Dagens runa ${RUNES[wd][1]}" role="img">${RUNES[wd][0]}</span><h1>${c.txt}</h1></div>
+ <p class="muted small" style="margin:4px 0 0">${A.d} · ${A.pl} · ${A.gud} · ${A.slag==='eter'?'eterdag':SLAGN[A.slag]+' dag'}</p>
+ <p style="margin:1px 0 0;font-size:11.5px;color:#6B7684">${now.getDate()} ${['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'][now.getMonth()]} ${now.getFullYear()}</p>
+ <p class="muted small" style="margin:2px 0 0">Dagens arketyp: <span class="serif" style="font-size:19px;color:var(--gold)">${A.ark}</span></p>
+ <p class="muted small" style="margin:0">${A.k}</p>${(()=>{const hm=himmel(new Date());return `<p class="muted small" style="margin:4px 0 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span role="img" aria-label="${hm.name}, ${hm.waxing?'växande':'avtagande'}" style="display:inline-flex">${moonNow(18)}</span>${hm.name} · <span style="color:var(--${hm.el})">${THUN[hm.el][0].toLowerCase()}</span> · ${hm.stigande?'stigande':'sjunkande'}</p>`})()}</div>
+ <div style="display:flex;gap:4px"><button class="iconbtn" data-go="spegeln" aria-label="Spegeln" style="color:var(--gold);flex-direction:column;gap:2px;height:56px"><svg width="26" height="28" viewBox="0 0 24 26" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><path d="M7 1.5a5 5 0 0 0 10 0"/><circle cx="12" cy="11.5" r="5.5"/><circle cx="12" cy="11.5" r="1.3" fill="currentColor" stroke="none"/><path d="M12 17v8M8.5 21.5h7"/></svg><span style="font-family:var(--label);font-size:9px;letter-spacing:.12em">SPEGELN</span></button>
+ <button data-go="eter" aria-label="Gå in i Etern" class="eterport"><span class="eterring"></span>${solidSVG('eter',46,'solidglow')}<span style="font-family:var(--label);font-size:9px;letter-spacing:.18em;color:var(--eter)">ETER</span></button></div></div>
+ <div class="p"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;margin-bottom:10px"><div>${seedSVG(wd,'go',140,true)}<p class="muted" style="margin:2px 0 0;text-align:center;font-size:11px">veckan</p></div><button id="dayclock" data-go="dygn" aria-label="Öppna dygnets hjul" style="background:none;border:none;padding:0;width:100%">${dayClockSVG()}</button></div>
+ <div><p class="lbl" style="margin-bottom:4px">Dagens verk · ${RUNES[wd][1]}</p><p class="serif" style="margin:0;font-size:17px;line-height:1.3;color:var(--cream)">${VERK[wd]}</p><p class="muted small" style="margin:6px 0 0">Kost: ${A.kost}</p>
+ <p class="muted small" style="margin:4px 0 0">${wd===3?(isLongFast(now)?'Månens fasta, 36 h: från tisdagens middag till torsdagens frukost.':'Veckans fasta, 24 h: från tisdagens middag till onsdagens middag.'):'Kvällsfrågan: '+A.q}</p></div></div>
+ <div class="p"><div class="tabs" role="group" aria-label="Del av dygnet">
+ ${['morgon','dag','kvall'].map(k=>`<button class="tab ${tabSel===k&&openL.h?'on':''}" data-tab="${k}" aria-pressed="${tabSel===k&&openL.h}"><b>${k==='kvall'?'Kväll':k[0].toUpperCase()+k.slice(1)}</b>${miniBoxes(L[k],day)}<span>${cnt(k)}</span></button>`).join('')}<button class="tab" data-go="timglas" aria-label="Timglaset" style="flex:0 0 56px;${T.run?'border-color:var(--gold);color:var(--gold)':''}">${TIMGLAS_IKON(20)}<span id="tg-mini">${T.run?'':'tid'}</span></button></div>
+ ${openL.h?L[tabSel].map(a=>itemHTML(a,day,isArk(wd,a)?wd:null)).join(''):''}
+ ${extras.length?'<p class="lbl" style="margin-top:12px">Därtill i dag</p>'+extras.map(l=>`<div class="entry"><span>${esc(ACTS[l.a]?.n||l.a)}${elTag(l.a)}</span><button class="btn" data-del="${l.t}" aria-label="Ta bort">✕</button></div>`).join(''):''}
+ <button class="add" data-picker>+ Därtill</button>
+ ${picker?pickerHTML():''}</div>
+ ${veckan()}
+ <div class="p"><p class="lbl">Dagens dagg · ${tot}</p>${ELORDER.map(k=>`<div class="row" style="min-height:28px"><span style="width:62px;color:var(--${k})">${EL[k].n}</span><div class="bar"><i style="width:${Math.min(100,td[k]*2)}%;background:var(--${k})"></i></div><span class="muted small" style="width:28px;text-align:right">${td[k]}</span></div>`).join('')}
+ <p class="muted small" style="margin:8px 0 0">Svit: ${svit()} dagar med hela morgonriten</p></div>`;
+ return html;
+}
+function pickerHTML(){
+ return `<div class="chips">${EXTRA.map(a=>`<button class="chip" data-extra="${a}" style="border-color:var(--${Object.keys(ACTS[a].e)[0]})">${esc(ACTS[a].n)}</button>`).join('')}</div>
+ <form id="egen" style="margin-top:12px;display:grid;grid-template-columns:1fr 110px;gap:8px">
+ <label class="lbl" for="egenNamn" style="grid-column:1/-1;margin:0">Egen syssla</label>
+ <input id="egenNamn" placeholder="Till exempel isbad i havet" required>
+ <select id="egenEl" aria-label="Element">${ELORDER.map(k=>`<option value="${k}">${EL[k].n}</option>`).join('')}</select>
+ <button class="btn gold" style="grid-column:1/-1">Lägg till</button></form>`;
+}
+
+const PAGE={
+ luft:{rooms:[['Tidskristallen','Veckans sju dagar','tid'],['Solen','Årshjulet och högtiderna','sol'],['Månen','Månadens fyra veckor','mane'],['Andningen','Guidade övningar och timglaset','timglas','andning'],['Ordet','Läsning och skrivande'],['Kodexen','Lärornas bok','kodex']],sub:'öster · vår'},
+ eld:{rooms:[['Kraftträdet','Färdigheterna och stegen dit'],['Passen','Program, set och vikter · timglaset','timglas','intervall'],['Härdningen','Bastu, kallbad, sol, jordning · timglaset','timglas','kyla'],['Stav','Kampkonsten'],['Kroppens mått','Vikt, vilopuls och mer']],sub:'söder · sommar'},
+ vatten:{rooms:[['Urds brunn','Sagan: allt du gjort','saga'],['Mimers brunn','Råd och morgonklunk'],['Hvergelmer','Känslorna och det som gnager'],['Relationsbanden','Dina nära']],sub:'väster · höst'},
+ jord:{rooms:[['Aktiveringssekvensen','Morgonens väckning, 10 min','sekvens'],['Kartan','Platser och uppdrag'],['Kistan','Skattkammaren'],['Visthuset','Kost och näring'],['Arvet','Ätten och förfäderna'],['Verkstaden','Händernas verk']],sub:'norr · vinter'},
+ eter:{rooms:[['Yggdrasil','De nio världarna'],['Tystnaden','Den dagliga meditationen · timglaset','timglas','stilla'],['Drömmarna','Drömdagbok och klardröm'],['Sejden','Intuition och siande'],['Runor och galder','Runorna och toningen'],['Riterna','Blot, vigningar och ordal'],['Asatrologin','Himlen och ditt födelsediagram','astro']],sub:'mitten · bortom kretsloppet'}};
+function runePanel(wd){const R=RUNES[wd],I=RINFO[wd];
+ return `<div class="p" style="border-color:#4A4130"><p class="lbl">Dagens runa · ${ARK[wd].d}</p>
+ <div style="display:flex;gap:16px;align-items:center"><span class="rune" style="font-size:64px;color:var(--gold)">${R[0]}</span><div><p class="serif" style="margin:0;font-size:28px;color:var(--cream)">${R[1]}</p><p class="muted small" style="margin:2px 0 0">${R[2]}</p></div></div>
+ <p style="margin:12px 0 8px">${I.m}</p>
+ <p class="serif" style="margin:0;font-size:18px;color:var(--cream);font-style:italic">${I.k}</p><p class="muted small" style="margin:2px 0 12px">${I.ks}</p>
+ <p class="lbl" style="margin-bottom:6px">Så hedrar och kallar du på runan</p>
+ <p class="small" style="margin:0 0 6px"><span style="color:var(--gold)">Galdra</span> · sjung runans namn långsamt, tre eller nio gånger: ${I.g}.</p>
+ <p class="small" style="margin:0 0 6px"><span style="color:var(--gold)">Rista</span> · ${I.r}</p>
+ <p class="small" style="margin:0 0 6px"><span style="color:var(--gold)">Begrunda</span> · sitt en stund med runans form och med raden ur runkvädet. Vad säger den om din dag?</p>
+ <p class="small" style="margin:0"><span style="color:var(--gold)">Gör</span> · ${VERK[wd]}</p></div>`}
+function miniSeed(){const r=6.2,S3=Math.sqrt(3),pos=[[0,-2*r],[-S3*r,-r],[S3*r,-r],[0,0],[-S3*r,r],[S3*r,r],[0,2*r]],wd=new Date().getDay();
+ let g='';pos.forEach(([x,y],i)=>{g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${i===wd?'rgba(232,194,106,.18)':'none'}" stroke="${i===wd?'#E8C26A':SLAGC[ARK[i].slag]}" stroke-opacity="${i===wd?1:.7}" stroke-width=".9"/>`});
+ const pts=[...pos,pos[0]];g+=`<path d="M${pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')}" fill="none" stroke="#8C7FB0" stroke-opacity=".6" stroke-width=".6"/>`;
+ pos.forEach(([x,y],i)=>g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.1" fill="${i===wd?'#E8C26A':SLAGC[ARK[i].slag]}"/>`);
+ return `<svg width="54" height="54" viewBox="-21 -21 42 42" aria-hidden="true">${g}</svg>`}
+function miniWheel(){const S='#D6CAA6',P=(d,r)=>{const a=(d-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]},f=v=>v.toFixed(1);
+ let g=`<circle r="15" fill="none" stroke="${S}" stroke-width="2.6"/>`;[0,90,180,270].forEach(d=>{const [x1,y1]=P(d,3),[x2,y2]=P(d,15);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="${S}" stroke-width="2.3" stroke-linecap="round"/>`});
+ g+=`<circle r="2.8" fill="#07090C" stroke="${S}" stroke-width="1.6"/>`;[45,135,225,315].forEach(d=>{const [x,y]=P(d,8.5);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="1.7" fill="${S}"/>`});
+ for(let i=0;i<365;i+=14){const [x,y]=P(wheelAng(i),20);g+=`<circle cx="${f(x)}" cy="${f(y)}" r=".7" fill="#5A6470"/>`}
+ const [sx,sy]=P(wheelAng(cal(new Date()).idx),20);g+=`<circle cx="${f(sx)}" cy="${f(sy)}" r="2.6" fill="#E8C26A"/>`;
+ return `<svg width="54" height="54" viewBox="-24 -24 48 48" aria-hidden="true">${g}</svg>`}
+function miniMoon(){const hm=himmel(new Date()),P=(d,r)=>{const a=(d-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]},f=v=>v.toFixed(1);
+ let g='';const day=Math.floor(hm.age/SYN*28);for(let i=0;i<28;i++){const [x,y]=P(i*360/28,21);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="${i===day?1.9:.8}" fill="${i===day?'#E8C26A':'#5A6470'}"/>`}
+ return `<svg width="54" height="54" viewBox="-25 -25 50 50" aria-hidden="true">${g}<g transform="translate(-13 -13)">${phaseSVG(hm.age,26).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</g></svg>`}
+const ROOMICON={'Aktiveringssekvensen':()=>SOLUPP(40),'Asatrologin':()=>'<svg width="40" height="40" viewBox="-12 -12 24 24" fill="none" stroke="#B9A3D9" stroke-width=".9" aria-hidden="true"><circle r="10.5"/><circle r="7"/>'+Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return `<path d="M${(7*Math.cos(a)).toFixed(2)} ${(7*Math.sin(a)).toFixed(2)}L${(10.5*Math.cos(a)).toFixed(2)} ${(10.5*Math.sin(a)).toFixed(2)}"/>`}).join('')+'<path d="M0 -3.5l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" fill="#B9A3D9" stroke="none"/></svg>','Kodexen':()=>SKRIFTRULLE(40),'Tidskristallen':miniSeed,'Solen':miniWheel,'Månen':miniMoon,
+ 'Andningen':()=>'<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D9C98A" stroke-width="1.1" stroke-linecap="round" aria-hidden="true"><path d="M3 9h10a3 3 0 1 0-3-3M3 15h14a3 3 0 1 1-3 3M3 12h7"/></svg>',
+ 'Ordet':()=>'<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D9C98A" stroke-width="1.1" stroke-linejoin="round" aria-hidden="true"><path d="M3 6c3-1 6-1 9 1 3-2 6-2 9-1v13c-3-1-6-1-9 1-3-2-6-2-9-1zM12 7v13"/></svg>'};
+// ---------- De platonska kropparna, roterande i trådform ----------
+const PLATON=(()=>{const P=(1+Math.sqrt(5))/2,Q=1/P,S={eld:[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]],luft:[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]],vatten:[],jord:[],eter:[]};
+ for(const a of[-1,1])for(const b of[-1,1]){S.vatten.push([0,a,b*P],[a,b*P,0],[b*P,0,a]);S.eter.push([0,a*Q,b*P],[a*Q,b*P,0],[b*P,0,a*Q]);for(const c of[-1,1]){S.jord.push([a,b,c]);S.eter.push([a,b,c]);}}
+ const out={};for(const k in S){const v=S[k];let m=1e9;const d=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1],p[2]-q[2]);
+  for(let i=0;i<v.length;i++)for(let j=i+1;j<v.length;j++)m=Math.min(m,d(v[i],v[j]));const e=[];
+  for(let i=0;i<v.length;i++)for(let j=i+1;j<v.length;j++)if(d(v[i],v[j])<m*1.01)e.push([i,j]);
+  const r=Math.max(...v.map(p=>Math.hypot(...p)));out[k]={v:v.map(p=>p.map(x=>x/r)),e}}return out})();
+const SOLNAMN={eld:'tetraedern',luft:'oktaedern',vatten:'ikosaedern',jord:'kuben',eter:'dodekaedern'};
+const SOLOFF={eld:0,luft:.9,vatten:1.8,jord:2.7,eter:3.6};
+function solidSVG(k,size,cls){return `<svg class="${cls||''}" data-solid="${k}" width="${size}" height="${size}" viewBox="-1.25 -1.25 2.5 2.5" fill="none" style="stroke:var(--${k});color:var(--${k});overflow:visible" role="img" aria-label="${SOLNAMN[k]}"><path class="bk" stroke-opacity=".28" stroke-width=".7" vector-effect="non-scaling-stroke"/><path class="fr" stroke-width="1.3" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`}
+const calmMotion=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function spinSolids(t){
+ if(typeof document.querySelectorAll==='function'){const tt=calmMotion?4000:t;
+  document.querySelectorAll('svg[data-solid]').forEach(el=>{const k=el.dataset.solid,G=PLATON[k];if(!G)return;const o=SOLOFF[k];
+   const a=tt*0.00035+o,b=tt*0.00023+o*1.4,ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b),br=1+0.04*Math.sin(tt*0.0006);
+   const pr=G.v.map(([x,y,z])=>{const x1=x*ca+z*sa,z1=-x*sa+z*ca;return [x1*br,(y*cb-z1*sb)*br,y*sb+z1*cb]});
+   let f='',bk='';G.e.forEach(([i,j])=>{const s=`M${pr[i][0].toFixed(3)} ${pr[i][1].toFixed(3)}L${pr[j][0].toFixed(3)} ${pr[j][1].toFixed(3)}`;if(pr[i][2]+pr[j][2]<-0.3)bk+=s;else f+=s});
+   el.querySelector('.bk').setAttribute('d',bk);el.querySelector('.fr').setAttribute('d',f)})}
+ if(!calmMotion&&typeof requestAnimationFrame==='function')requestAnimationFrame(spinSolids);
+}
+let solInfo=null;
+const LARA={eld:{q:'varm och torr',tri:['Kropp','Träning','Färdighet'],v:'Muspelheim i söder, ljust och hett.'},
+ luft:{q:'varm och fuktig',tri:['Andning','Ord','Rytm'],v:'Ginnungagaps milda mitt, och Odens gåva önd.'},
+ vatten:{q:'kall och fuktig',tri:['Känslor','Band','Vishet'],v:'Niflheim i norr och källan Hvergelmer.'},
+ jord:{q:'kall och torr',tri:['Föda','Verk','Arv'],v:'Midgård, den bebodda jorden mitt i världen.'},
+ eter:{q:'bortom värme och kyla',tri:['Stillhet','Sejd','Dröm'],v:'Ginnungagap, det gapande tomrummet före allt.'}};
+function elLara(k){const L=LARA[k];return `<div class="p" style="border-color:var(--${k});margin-bottom:12px"><p class="lbl" style="color:var(--${k})">Om ${EL[k].n.toLowerCase()}${k==='eter'?'n':'en'}</p>
+ <p class="small" style="margin:0 0 4px"><span class="muted">Väderstreck och årstid</span> · ${PAGE[k].sub}</p>
+ <p class="small" style="margin:0 0 4px"><span class="muted">Platonsk kropp</span> · ${SOLNAMN[k]}</p>
+ <p class="small" style="margin:0 0 4px"><span class="muted">Egenskap</span> · ${L.q}</p>
+ <p class="small" style="margin:0 0 4px"><span class="muted">I myten</span> · ${L.v}</p>
+ <p class="small" style="margin:0"><span class="muted">Triangeln</span> · − ${L.tri[0]} · + ${L.tri[1]} · ⊙ ${L.tri[2]}</p></div>`}
+function elementPage(k){
+ const now=new Date(), wd=now.getDay(), day=today(), L=lists(wd);
+ const d=daggOf(S.log)[k], lv=level(d), lo=levelFloor(lv), hi=levelFloor(lv+1), pct=Math.round(100*(d-lo)/(hi-lo));
+ const todays=[...L.morgon,...L.dag,...L.kvall].filter(a=>ACTS[a].e[k]);
+ const ws=iso(weekStart()); const wlog=S.log.filter(l=>l.d>=ws&&ACTS[l.a]&&ACTS[l.a].e[k]);
+ const counts={}; wlog.forEach(l=>counts[l.a]=(counts[l.a]||0)+1);
+ return `<div class="head"><div style="display:flex;align-items:center;gap:14px"><button data-solinfo="${k}" aria-label="Om ${EL[k].n.toLowerCase()}en: väderstreck, årstid och kropp" aria-expanded="${solInfo===k}" style="background:none;border:none;padding:0;cursor:pointer">${solidSVG(k,64,'solidglow')}</button><div><h1>${EL[k].n}</h1><p class="serif" style="margin:2px 0 0;font-size:18px;color:var(--cream);opacity:.85">${EL[k].page}</p></div></div>
+ ${k==='eter'?back('harden'):''}</div>
+ ${solInfo===k?elLara(k):''}<button class="row" data-go="spegeln" style="width:100%;min-height:44px;background:none;border:none;padding:0 2px;margin-bottom:10px">
+ <span class="serif" style="font-size:19px;color:var(--${k});white-space:nowrap">Nivå ${lv}</span><div class="bar"><i style="width:${pct}%;background:var(--${k})"></i></div>
+ <span class="muted small" style="white-space:nowrap">${CLASS[k][0]} · ${title(k,lv)}</span></button>
+ ${k==='luft'?`<div class="p"><p class="lbl">Tidskristallen · tryck på en dag</p>${seedSVG(new Date().getDay(),'go')}</div>`:''}${k==='eter'?runePanel(wd):''}${todays.length?fold('el:'+k,'I dag i '+EL[k].n.toLowerCase(),todays,day,todays.map(a=>itemHTML(a,day)).join('')):'<div class="p"><p class="lbl">I dag i '+EL[k].n.toLowerCase()+'</p><p class="muted small" style="margin:0">Inget i dag för det här elementet. Lägg till med Därtill på Härden.</p></div>'}
+ 
+ <div class="grid2">${PAGE[k].rooms.map(r=>`<button class="tile ${r[2]?'':'soon'}" ${r[2]?`data-go="${r[2]}"${r[3]?` data-preset="${r[3]}"`:''}`:'data-soon'}>${ROOMICON[r[0]]?`<span style="display:block;margin-bottom:auto;padding-bottom:8px">${ROOMICON[r[0]]()}</span>`:''}<span class="t">${r[0]}</span><span class="d">${r[1]}${r[2]?'':' · kommer'}</span></button>`).join('')}</div>`;
+}
+function saga(){
+ const by={}; S.log.slice().sort((a,b)=>b.t-a.t).forEach(l=>{(by[l.d]=by[l.d]||[]).push(l)});
+ const days=Object.keys(by).sort().reverse().slice(0,60);
+ return `<div class="head"><div><p class="lbl" style="color:var(--vatten)">Urds brunn</p><h1>Sagan</h1><p class="muted small" style="margin:4px 0 0">Det som blivit, dag för dag</p></div>
+ <button class="iconbtn" data-go="vatten" aria-label="Tillbaka" style="color:var(--muted)">✕</button></div>
+ ${days.length?days.map(dd=>{const c=cal(dparse(dd));const dg=daggOf(by[dd]);const sum=Object.values(dg).reduce((a,b)=>a+b,0);
+ return `<div class="p"><div class="row"><span class="serif" style="font-size:19px;color:var(--cream)">${c.txt}</span><span class="muted small">${dd} · ${sum} dagg</span></div>
+ ${by[dd].map(l=>`<div class="entry"><span>${esc(ACTS[l.a]?.n||l.a)}${l.x?'<span class="tag muted">därtill</span>':''}</span><button class="btn" data-del="${l.t}" aria-label="Ta bort">✕</button></div>`).join('')}</div>`}).join('')
+ :'<div class="p"><p class="muted" style="margin:0">Sagan är ännu oskriven. Bocka av något på Härden.</p></div>'}`;
+}
+function spegeln(){
+ const all=daggOf(S.log); const since=new Date();since.setDate(since.getDate()-91);const sIso=iso(since);
+ const rec=daggOf(S.log.filter(l=>l.d>=sIso)); const ranked=ELORDER.slice().sort((a,b)=>rec[b]-rec[a]);
+ const any=Object.values(rec).some(v=>v>0); const main=ranked[0], sec=ranked[1];
+ const lv=k=>level(all[k]); const total=Object.values(all).reduce((a,b)=>a+b,0);
+ const R=62, pt=(i,r)=>{const a=(-90+i*72)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]};
+ const po=['eter','vatten','luft','eld','jord'], mx=Math.max(5,...po.map(lv));
+ let svg=`<svg width="100%" height="190" viewBox="-100 -88 200 178" role="img" aria-label="Elementens profil">`;
+ [0.33,0.66,1].forEach(f=>svg+=`<path d="M${po.map((_,i)=>pt(i,R*f).map(v=>v.toFixed(1)).join(' ')).join('L')}z" fill="none" stroke="#1E242C"/>`);
+ svg+=`<path d="M${po.map((k,i)=>pt(i,R*lv(k)/mx).map(v=>v.toFixed(1)).join(' ')).join('L')}z" fill="#E8C26A" fill-opacity=".15" stroke="#E8C26A"/>`;
+ po.forEach((k,i)=>{const [x,y]=pt(i,R+14);svg+=`<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="${Math.abs(x)<5?'middle':x>0?'start':'end'}" fill="var(--${k})" font-size="10" font-family="Jost,sans-serif">${EL[k].n} ${lv(k)}</text>`});
+ svg+='</svg>';
+ return `<div class="head"><div><p class="lbl" style="color:var(--gold)">Spegeln</p><h1>Ditt väsen</h1><p class="muted small" style="margin:4px 0 0">Hela din ställning på ett ställe</p></div>
+ <button class="iconbtn" data-go="harden" aria-label="Tillbaka" style="color:var(--muted)">✕</button></div>
+ <div class="p"><p class="lbl">Klass</p>${any?`<p class="serif" style="margin:0;font-size:26px;color:var(--${main})">${CLASS[main][0]} · ${title(main,lv(main))}</p>
+ <p class="muted small" style="margin:4px 0 0">Andraklass: ${CLASS[sec][0]} · ${title(sec,lv(sec))}</p><p class="muted small" style="margin:2px 0 0">Klassen växer fram ur det element som fått mest dagg de senaste tretton veckorna.</p>`
+ :'<p class="muted" style="margin:0">Din klass växer fram när du börjat samla dagg.</p>'}</div>
+ <div class="p"><p class="lbl">Rang</p><p class="serif" style="margin:0;font-size:26px;color:var(--cream)">Jordträl</p><p class="muted small" style="margin:4px 0 0">Träl, steg 1 av 5. Proven och vigningarna byggs i nästa version.</p></div>
+ <div class="p"><p class="lbl">Elementen</p>${svg}${ELORDER.map(k=>{const d=all[k],l=lv(k),lo=levelFloor(l),hi=levelFloor(l+1);
+ return `<button class="row" data-go="${k}" style="width:100%;min-height:40px;background:none;border:none;padding:0"><span style="width:76px;text-align:left;color:var(--${k})">${EL[k].n} ${l}</span><div class="bar"><i style="width:${Math.round(100*(d-lo)/(hi-lo))}%;background:var(--${k})"></i></div><span class="muted small" style="width:96px;text-align:right">${title(k,l)}</span></button>`}).join('')}</div>
+ <div class="p"><p class="lbl">Svit och samlat</p><div class="grid2"><div class="stat"><b>${svit()}</b><span>dagar i svit</span></div><div class="stat"><b>${total}</b><span>dagg totalt</span></div>
+ <div class="stat"><b>${S.log.length}</b><span>handlingar</span></div><div class="stat"><b>${new Set(S.log.map(l=>l.d)).size}</b><span>dagar i Sagan</span></div></div></div>
+ <div class="p"><p class="lbl">Säkerhetskopia</p><p class="muted small" style="margin:0 0 10px">Allt sparas i den här webbläsaren. Spara en kopia då och då.</p>
+ <div class="row"><button class="btn gold" data-export>Spara kopia</button><label class="btn" style="display:flex;align-items:center">Läs in kopia<input type="file" accept="application/json" data-import style="display:none"></label></div></div>`;
+}
+
+// ---------- Tiden: Tidskristallen, Solen och Månen ----------
+const META=[['guld','guld'],['silver','vitt och silver'],['järn','rött'],['kvicksilver','allfärgad'],['tenn','blått'],['koppar','grönt'],['bly','svart']];
+const SLAGN={varm:'aktiv',kall:'mottaglig',eter:'eter'};
+const SLAGC={varm:'var(--eld)',kall:'var(--vatten)',eter:'var(--eter)'};
+let selDay=null;
+function seedSVG(sel,mode,h,bare){
+ const r=27,S3=Math.sqrt(3),pos=[[0,-2*r],[-S3*r,-r],[S3*r,-r],[0,0],[-S3*r,r],[S3*r,r],[0,2*r]];
+ let g='';
+ pos.forEach(([x,y],i)=>{const on=i===sel,c=SLAGC[ARK[i].slag];
+  g+=`<g data-day="${i}" ${mode==='go'?'data-goday="1"':''}${mode==='sel'?'data-zoom="1"':''} style="cursor:pointer" role="button" aria-label="${ARK[i].d}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${on?'rgba(232,194,106,.12)':'#0C1015'}" stroke="${on?'#E8C26A':c}" stroke-opacity="${on?1:.55}" stroke-width="${on?1.4:.9}"/></g>`});
+ const pts=[...pos,pos[0]];
+ g+=`<path d="M${pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L')}" fill="none" stroke="#8C7FB0" stroke-opacity=".55" stroke-width=".9" pointer-events="none"/>`;
+ for(let i=0;i<7;i++){const [x1,y1]=pts[i],[x2,y2]=pts[i+1];let mx=(x1+x2)/2,my=(y1+y2)/2;if(i===6)my=-r;const a=Math.atan2(y2-y1,x2-x1);
+  const tp=[mx+4*Math.cos(a),my+4*Math.sin(a)],l=[mx-3*Math.cos(a)+3*Math.sin(a),my-3*Math.sin(a)-3*Math.cos(a)],rr=[mx-3*Math.cos(a)-3*Math.sin(a),my-3*Math.sin(a)+3*Math.cos(a)];
+  g+=`<path d="M${tp.map(v=>v.toFixed(1)).join(' ')}L${l.map(v=>v.toFixed(1)).join(' ')}L${rr.map(v=>v.toFixed(1)).join(' ')}z" fill="#8C7FB0" fill-opacity=".75" pointer-events="none"/>`}
+ pos.forEach(([x,y],i)=>{const on=i===sel;g+=`<text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle" fill="${on?'#E8C26A':SLAGC[ARK[i].slag]}" font-size="16" font-family="Noto Sans Runic,Segoe UI Historic,Apple Symbols,serif" pointer-events="none">${RUNES[i][0]}</text><text x="${x.toFixed(1)}" y="${(y+19).toFixed(1)}" text-anchor="middle" fill="${on?'#E8C26A':'#9AA4B1'}" font-size="7.5" font-family="Jost,sans-serif" pointer-events="none">${ARK[i].d.slice(0,3)}</text>`});
+ if(bare) return `<svg width="100%" height="${h||150}" viewBox="-84 -86 168 172" style="display:block" aria-label="Tidskristallen">${g}</svg>`;
+ return `<svg width="100%" height="${h||230}" viewBox="-84 -86 168 172" style="display:block">${g}</svg><p class="muted small" style="text-align:center;margin:4px 0 0"><span style="color:var(--eld)">●</span> aktiv · <span style="color:var(--vatten)">●</span> mottaglig · <span style="color:var(--eter)">●</span> eter · <span style="color:#8C7FB0">→</span> tidspilen</p>`;
+}
+function back(to){return `<button class="iconbtn" data-go="${to}" aria-label="Tillbaka" style="color:var(--muted)">✕</button>`}
+function tid(){
+ const wd=new Date().getDay(); if(selDay===null) selDay=wd;
+ const rows=ARK.map((A,i)=>{const P=PLAN[DAGPLAN[i]],on=i===wd;return `<button data-day="${i}" data-zoom="1" class="row" style="width:100%;background:none;border:none;border-bottom:1px solid var(--line2);color:inherit;font:inherit;text-align:left;padding:9px 0;${on?'background:rgba(232,194,106,.06)':''}">
+  <span style="display:flex;align-items:center;gap:12px"><span class="rune" style="font-size:26px;width:28px;text-align:center;color:${on?'var(--gold)':P[4]}">${RUNES[i][0]}</span><span><span class="serif" style="font-size:18px;color:var(--cream)">${A.ark}</span><br><span class="muted small">${A.d} · ${P[1]} ${A.pl} · ${A.gud}</span></span></span>
+  <span class="small" style="color:${SLAGC[A.slag]}">${SLAGN[A.slag]}${on?' · i dag':''} ›</span></button>`}).join('');
+ return `<div class="head"><div><p class="lbl" style="color:var(--luft)">Luft</p><h1>Tidskristallen</h1><p class="muted small" style="margin:4px 0 0">Veckans sju dagar, från söndag till lördag</p></div>${back('luft')}</div>
+ <div class="p">${seedSVG(wd,'sel')}<p class="muted small" style="text-align:center;margin:6px 0 0">Tryck på en dag för att gå in i den</p></div>
+ <div class="p"><p class="lbl">Veckans sju</p>${rows}</div>`;
+}
+const ETYM=['Av fornnordiska <i>sunnudagr</i>, solens dag, efter latinets <i>dies Solis</i>.',
+ 'Av <i>mánadagr</i>, månens dag, efter latinets <i>dies Lunae</i>.',
+ 'Av <i>Týsdagr</i>, Tyrs dag. Romarna kallade den <i>dies Martis</i>, och Tyr sattes i krigsguden Mars ställe.',
+ 'Av <i>Óðinsdagr</i>, Odens dag. Romarnas <i>dies Mercurii</i>: Oden likställdes med Merkurius, vägvisaren och ordets gud.',
+ 'Av <i>Þórsdagr</i>, Tors dag. Romarnas <i>dies Iovis</i>: åskguden Tor i åskguden Jupiters ställe.',
+ 'Av <i>Frjádagr</i>, troligen Friggs dag, men tidigt förknippad med Freja. Romarnas <i>dies Veneris</i>, kärlekens dag.',
+ 'Av <i>laugardagr</i>, tvagningsdagen (<i>laug</i> är bad). Romarnas <i>dies Saturni</i>. Ingen nordisk gud gav dagen namn; Loke som dagens arketyp är vår egen tolkning, buren av Saturnus och av badets rening.'];
+function dag(){
+ const sd=selDay??new Date().getDay(), A=ARK[sd], P=PLAN[DAGPLAN[sd]], col=P[4], L=lists(sd); ACTS.runa.n='Dagens runa: '+RUNES[sd][1];
+ const date=weekStart(); date.setDate(date.getDate()+sd); const di=iso(date), isToday=di===today(), past=di<today(), c=cal(date);
+ const row=a=>isToday?itemHTML(a,di,isArk(sd,a)?sd:null):`<div class="item" style="cursor:default"><span class="nm" style="${done(a,di)?'color:#6B7684':''}">${esc(ACTS[a].n)}${isArk(sd,a)?`<span class="tag" style="color:var(--gold)"><span class="rune">${RUNES[sd][0]}</span> ${A.ark}</span>`:''}</span><span class="ck" style="${done(a,di)?'background:var(--gold);border-color:var(--gold)':''}">${done(a,di)?'✓':''}</span></div>`;
+ const f=v=>v.toFixed(1), R=150, k=R/27, S3=Math.sqrt(3), pos=[[0,-2],[-S3,-1],[S3,-1],[0,0],[-S3,1],[S3,1],[0,2]].map(([x,y])=>[(x-[0,-S3,S3,0,-S3,S3,0][sd])*27*k,(y-[-2,-1,-1,0,1,1,2][sd])*27*k]);
+ const PP=(deg,r)=>{const a=(deg-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]};
+ let g=`<defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <linearGradient id="opal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B9A3D9"/><stop offset=".3" stop-color="#8FB3C9"/><stop offset=".5" stop-color="#9FC7A8"/><stop offset=".7" stop-color="#E8C26A"/><stop offset="1" stop-color="#D99AB8"/></linearGradient>
+  <radialGradient id="dgl"><stop offset="0" stop-color="${col}" stop-opacity=".16"/><stop offset=".7" stop-color="${col}" stop-opacity=".04"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient></defs>`;
+ // grannarna i fröet, som man just zoomat förbi
+ pos.forEach(([x,y],i)=>{if(i===sd)return;g+=`<circle cx="${f(x)}" cy="${f(y)}" r="${R}" fill="none" stroke="${SLAGC[ARK[i].slag].replace('var(--eld)','#D8834A').replace('var(--vatten)','#8FB3C9').replace('var(--eter)','#B9A3D9')}" stroke-opacity=".28" stroke-width="1.2"/>`});
+ const pts=[...pos,pos[0]];g+=`<path d="M${pts.map(p=>f(p[0])+' '+f(p[1])).join('L')}" fill="none" stroke="#8C7FB0" stroke-opacity=".3" stroke-width="1.2"/>`;
+ // dagens krets
+ g+=`<circle r="${R}" fill="#090C10"/><circle r="${R}" fill="url(#dgl)"/>`;
+ for(let j=0;j<24;j++){const p=PLAN[(DAGPLAN[sd]+j)%7],a0=j*15-7.5+.6,a1=j*15+7.5-.6,pp=[];for(let t=0;t<=6;t++)pp.push(PP(a0+(a1-a0)*t/6,R-4));for(let t=6;t>=0;t--)pp.push(PP(a0+(a1-a0)*t/6,R-20));
+  g+=`<path d="M${pp.map(q=>f(q[0])+' '+f(q[1])).join('L')}z" fill="${p[4]}" fill-opacity="${j===0?.5:.14}"/>`;const [tx,ty]=PP(j*15,R-12);g+=`<text x="${f(tx)}" y="${f(ty+3.3)}" text-anchor="middle" fill="${j===0?'#F1E6C8':p[4]}" fill-opacity="${j===0?1:.8}" font-size="9" font-family="'Noto Sans Runic',serif">${p[2]}</text>`}
+ const ink=sd===3?'url(#opal)':col;g+=`<circle r="${R}" fill="none" stroke="${ink}" stroke-width="${sd===3?2.8:2.2}" filter="url(#glow)"/><circle r="${R-26}" fill="none" stroke="${col}" stroke-opacity=".35" stroke-width=".8"/>`;
+ g+=`<text y="-98" text-anchor="middle" fill="#9AA4B1" font-size="11" letter-spacing="3" font-family="Jost,sans-serif">${A.d.toUpperCase()}</text>`;
+ g+=`<text y="-78" text-anchor="middle" fill="${col}" font-size="13" font-family="Jost,sans-serif">${P[1]} ${A.pl}</text>`;
+ g+=`<text y="36" text-anchor="middle" fill="${ink}" font-size="104" font-family="'Noto Sans Runic',serif" filter="url(#glow)">${RUNES[sd][0]}</text>`;
+ g+=`<text y="70" text-anchor="middle" fill="#F1E6C8" font-size="22" font-family="'Cormorant Garamond',Georgia,serif">${A.ark}</text>`;
+ g+=`<text y="88" text-anchor="middle" fill="#9AA4B1" font-size="10.5" font-family="Jost,sans-serif">${A.gud} · ${RUNES[sd][1]} · ${META[sd][0]}</text>`;
+ g+=`<text y="104" text-anchor="middle" fill="${SLAGC[A.slag].replace('var(--eld)','#D8834A').replace('var(--vatten)','#8FB3C9').replace('var(--eter)','#B9A3D9')}" font-size="10" font-family="Jost,sans-serif">${A.slag==='eter'?'eterdag, bortom polerna':SLAGN[A.slag]+' dag'} · ${A.kost}</text>`;
+ const pv=(sd+6)%7, nx=(sd+1)%7;
+ return `<div class="head"><div><p class="lbl" style="color:var(--luft)">Tidskristallen</p><h1 style="text-transform:capitalize">${A.d}</h1><p class="muted small" style="margin:4px 0 0">${c.txt} · ${date.getDate()}/${date.getMonth()+1}${isToday?' · i dag':''}</p></div>${back('tid')}</div>
+ <div class="${fresh?'zoomin':''}" style="margin:0 -16px 4px"><svg width="100%" viewBox="-180 -180 360 360" style="display:block;height:auto" role="img" aria-label="${A.d}: ${A.ark}, ${RUNES[sd][1]}">${g}</svg></div>
+ <div class="row" style="margin:0 0 12px"><button class="btn" data-day="${pv}" data-zoom="1">‹ ${ARK[pv].d}</button><span class="muted small">tidspilen</span><button class="btn" data-day="${nx}" data-zoom="1">${ARK[nx].d} ›</button></div>
+ <div class="p" style="border-color:#4A4130"><p class="lbl">Dagens verk</p><p class="serif" style="margin:0;font-size:20px;color:var(--cream)">${VERK[sd]}</p>
+ <p style="margin:10px 0 0">${A.k[0].toUpperCase()+A.k.slice(1)}.</p>
+ <p class="muted small" style="margin:8px 0 0">Färg: ${META[sd][1]} · metall: ${META[sd][0]} · planet: ${P[1]} ${A.pl}</p>
+ <p class="muted small" style="margin:8px 0 0">Kvällsfrågan: <span class="serif" style="font-size:17px;color:var(--cream)">${A.q}</span></p></div>
+ <div class="p"><p class="lbl">Namnet</p><p class="small" style="margin:0">${ETYM[sd]}</p><p class="muted small" style="margin:8px 0 0">Ringen i kretsen visar dagens tjugofyra planettimmar i kaldeisk ordning. Dagens egen planet styr den första timmen efter soluppgången; därav dagens namn.</p></div>
+ ${runePanel(sd)}
+ ${['morgon','dag','kvall'].map(x=>fold('d'+sd+x,(x==='kvall'?'Kväll':x[0].toUpperCase()+x.slice(1))+(!isToday&&!past?' · kommande':''),L[x],di,L[x].map(row).join(''))).join('')}`;
+}
+const MINFO=[['isen lägger sig','grepp'],['den torra kylan','leende'],['skaren bär','skratt'],['gryningen i öster, avlelsen','Ordet'],['saven stiger','rörelse'],['blomningen','beröring'],['ljusets höjd, midsommar','smak'],['daggen och högsommaren','lukt'],['de gyllene fälten','hörsel'],['skördetiden, höstdagjämning','balans'],['dimman och diserna','syn'],['slakten och offret, förfäderna','sömn'],['väntan, julslakt, bak och brygd','andning']];
+const HOL=[['Solhvarvet','vinterns hjärta · Jul 28, Mödranatt, Is 1',0,1],['Torreblot','vårens port',28+17,0],['Österdag','vårens hjärta',3*28+5,1],['Sommarmål','sommarens port',4*28+24,0],['Midsommar','sommarens hjärta',6*28+14,1],['Skördegille','höstens port',8*28+5,0],['Västerdag','höstens hjärta',9*28+23,1],['Alvablot','vinterns port',11*28+13,0]];
+const HRUNE={'Solhvarvet':['ᛞ','Dagaz','dag och gryning: ljuset föds på nytt'],'Torreblot':['ᛁ','Isa','is: vintern står still på sin höjd'],'Österdag':['ᛒ','Berkano','björk: födelse, våren, björken som slår ut'],'Sommarmål':['ᚠ','Fehu','boskap: boskapen släpps ut på bete'],'Midsommar':['ᛋ','Sowilo','sol: solen på sin höjd'],'Skördegille':['ᛃ','Jera','år och god skörd: den första skörden'],'Västerdag':['ᚷ','Gebo','gåva: tacket och jämvikten mellan givet och fått'],'Alvablot':['ᛟ','Othala','odal och arvejord: förfäderna och ätten']};
+const ANCH=[...HOL.map((h,i)=>[h[2],i*45]),[365,360]];
+function wheelAng(idx){for(let i=0;i<ANCH.length-1;i++){const [a0,g0]=ANCH[i],[a1,g1]=ANCH[i+1];if(idx>=a0&&idx<=a1)return g0+(g1-g0)*(idx-a0)/(a1-a0)}return 0}
+let selHol=null;
+function holDetail(n){const I=HOLINFO[n];const prim=HOL.find(x=>x[0]===n)[3];return `<div class="p" style="border-color:#4A4130"><div class="row"><p class="lbl" style="color:${prim?'#E8C26A':'#D9C98A'};margin:0">${prim?'⊕ hjärta':'◇ port'}</p><button class="btn" data-hol="" aria-label="Stäng">✕</button></div><div style="display:flex;align-items:center;gap:14px;margin:6px 0 8px"><span class="rune" style="font-size:48px;color:var(--gold)">${HRUNE[n][0]}</span><div><p class="serif" style="margin:0;font-size:28px;color:var(--cream)">${n}</p><p class="muted small" style="margin:0">${HRUNE[n][1]} · ${HRUNE[n][2]}</p></div></div><p style="margin:0 0 10px">${I.t}</p><p class="lbl">Rötterna</p>${I.r.map(([k,v])=>`<p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">${k}.</span> ${v}</p>`).join('')}<p class="lbl" style="margin-top:12px">Riter att göra</p>${I.s.map(x=>`<p class="small" style="margin:0 0 6px">ᛉ ${x}</p>`).join('')}</div>`}
+function sol(){
+ const c=cal(new Date()), cur=c.idx;
+ const P=(deg,r)=>{const a=(deg-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]}, f=v=>v.toFixed(1);
+ const STONE='#D6CAA6';
+ let g='';
+ // månadernas band med innevarande månad
+ if(c.mo>=0){const a0=wheelAng(1+c.mo*28),a1=wheelAng(1+c.mo*28+28),pts=[];for(let t=0;t<=20;t++)pts.push(P(a0+(a1-a0)*t/20,114));for(let t=20;t>=0;t--)pts.push(P(a0+(a1-a0)*t/20,98));
+  g+=`<path d="M${pts.map(q=>f(q[0])+' '+f(q[1])).join('L')}z" fill="rgba(232,194,106,.16)"/>`}
+ for(let m=0;m<13;m++){const d=wheelAng(1+m*28),[x1,y1]=P(d,98),[x2,y2]=P(d,114);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="#2A3340"/>`;
+  const [tx,ty]=P(wheelAng(1+m*28+14),106);g+=`<text x="${f(tx)}" y="${f(ty+2.5)}" text-anchor="middle" fill="${m===c.mo?'#E8C26A':'#7C8794'}" font-size="7" font-family="Jost,sans-serif">${MON[m]}</text>`}
+ // yttre varvet av prickar, en för varje vecka, som på hällristningen
+ for(let i=0;i<365;i+=7){const [x,y]=P(wheelAng(i),122);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="1.3" fill="#5A6470"/>`}
+ // det huggna solkorset
+ g+=`<circle r="88" fill="none" stroke="${STONE}" stroke-width="7" stroke-linecap="round"/>`;
+ [0,90,180,270].forEach(d=>{const [x1,y1]=P(d,13),[x2,y2]=P(d,88);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="${STONE}" stroke-width="6.5" stroke-linecap="round"/>`});
+ g+=`<circle r="12" fill="#07090C" stroke="${STONE}" stroke-width="5"/>`;
+ // portarna som prickar i kvadranterna
+ [45,135,225,315].forEach(d=>{const [x,y]=P(d,50);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="7" fill="${STONE}"/>`});
+ // noderna: högtiderna på ringen och deras runor utanför
+ HOL.forEach(([n,,,prim],i)=>{const d=i*45,[x,y]=P(d,88),[rx,ry]=P(d,138);
+  if(prim) g+=`<circle cx="${f(x)}" cy="${f(y)}" r="9" fill="#07090C" stroke="#E8C26A" stroke-width="1.6"/><path d="M${f(x-5.5)} ${f(y)}h11M${f(x)} ${f(y-5.5)}v11" stroke="#E8C26A" stroke-width="1.4"/>`;
+  else g+=`<path d="M${f(x)} ${f(y-7)}L${f(x+6)} ${f(y)}L${f(x)} ${f(y+7)}L${f(x-6)} ${f(y)}z" fill="#07090C" stroke="#D9C98A" stroke-width="1.3"/>`;
+  g+=`<text x="${f(rx)}" y="${f(ry+5)}" text-anchor="middle" fill="${prim?'#E8C26A':'#B8AE86'}" font-size="15" font-family="Noto Sans Runic,Segoe UI Historic,Apple Symbols,serif">${HRUNE[n][0]}</text>`});
+ // solen: var vi står just nu
+ const sd=wheelAng(cur),[sx,sy]=P(sd,122);
+ for(let k=0;k<8;k++){const [r1x,r1y]=[sx+8*Math.cos(k*Math.PI/4),sy+8*Math.sin(k*Math.PI/4)],[r2x,r2y]=[sx+11*Math.cos(k*Math.PI/4),sy+11*Math.sin(k*Math.PI/4)];g+=`<path d="M${f(r1x)} ${f(r1y)}L${f(r2x)} ${f(r2y)}" stroke="#E8C26A" stroke-width="1.2" stroke-linecap="round"/>`}
+ g+=`<circle cx="${f(sx)}" cy="${f(sy)}" r="6" fill="#E8C26A"/>`;
+ const left=h=>{let d=h-cur;if(d<0)d+=365;return d};
+ const next=HOL.slice().sort((a,b)=>left(a[2])-left(b[2]));
+ const mi=c.mo>=0?MINFO[c.mo]:null;
+ return `<div class="head"><div><p class="lbl" style="color:var(--luft)">Luft</p><h1>Solen</h1><p class="muted small" style="margin:4px 0 0">Årshjulet: tretton månader, fyra hjärtan och fyra portar</p></div>${back('luft')}</div>
+ <div class="p"><svg width="100%" height="350" viewBox="-160 -160 320 320" role="img" aria-label="Årshjulet som huggen solkorsring med solens plats i dag">${g}</svg><p class="serif" style="text-align:center;margin:0;font-size:20px;color:var(--cream)">${c.txt}</p><p class="muted small" style="text-align:center;margin:2px 0 0">Korsets armar pekar på solstånden och dagjämningarna, prickarna på portarna. <span style="color:#E8C26A">⊕</span> hjärtan · <span style="color:#D9C98A">◇</span> portar · runorna är högtidernas</p></div>
+ ${mi?`<div class="p"><p class="lbl">Månaden</p><p class="serif" style="margin:0;font-size:26px;color:var(--cream)">${MON[c.mo]}</p><p class="muted small" style="margin:2px 0 0">${mi[0]} · förmåga: ${mi[1]} · dag ${c.day} av 28, ${28-c.day} kvar</p></div>`:''}
+ ${selHol&&HOLINFO[selHol]?holDetail(selHol):''}<div class="p"><p class="lbl">Högtiderna · tryck för mer</p>${next.map(([n,roll,i,prim])=>`<button data-hol="${n}" class="row" style="width:100%;background:none;border:none;border-bottom:1px solid var(--line2);padding:0;text-align:left;min-height:46px"><span><span style="color:${prim?'#E8C26A':'#D9C98A'};margin-right:6px">${prim?'⊕':'◇'}</span><span class="rune" style="font-size:18px;color:var(--gold);margin-right:6px">${HRUNE[n][0]}</span><span class="serif" style="font-size:18px;color:var(--cream)">${n}</span> <span class="muted small">${roll}</span></span><span class="muted small" style="white-space:nowrap">${left(i)===0?'i dag':'om '+left(i)+' d'}</span></button>`).join('')}</div>`;
+}
+// ---------- Himlen: verklig måne, Thuns stjärnbildsdagar ----------
+const SYN=29.530588853;
+function jd(date){return date.getTime()/864e5+2440587.5}
+function sunLon(date){const T=(jd(date)-2451545)/36525,r=Math.PI/180;const L0=280.46646+36000.76983*T,M=(357.52911+35999.05029*T)*r;const C=(1.914602-0.004817*T)*Math.sin(M)+0.019993*Math.sin(2*M)+0.000289*Math.sin(3*M);return (((L0+C)%360)+360)%360}
+function moonAge(date){const e=((moonPos(date).lon-sunLon(date))%360+360)%360;return e/360*SYN}
+function moonDist(date){const T=(jd(date)-2451545)/36525,r=Math.PI/180;const D=(297.8501921+445267.1114034*T)*r,M=(357.5291092+35999.0502909*T)*r,Mp=(134.9633964+477198.8675055*T)*r;return 385001-20905*Math.cos(Mp)-3699*Math.cos(2*D-Mp)-2956*Math.cos(2*D)-570*Math.cos(2*Mp)+246*Math.cos(2*Mp-2*D)-205*Math.cos(M-2*D)-171*Math.cos(Mp+2*D)-152*Math.cos(Mp+M-2*D)}
+function apsisOn(date){const a=new Date(date);a.setHours(0,0,0,0);const b=new Date(a.getTime()+864e5);const s0=moonDist(new Date(a.getTime()+36e5))-moonDist(a),s1=moonDist(new Date(b.getTime()+36e5))-moonDist(b);return s0<0&&s1>=0?'perigeum':s0>0&&s1<=0?'apogeum':null}
+function moonPos(date){
+ const T=(jd(date)-2451545)/36525, r=Math.PI/180;
+ const Lp=218.3164477+481267.88123421*T, D=(297.8501921+445267.1114034*T)*r, M=(357.5291092+35999.0502909*T)*r,
+  Mp=(134.9633964+477198.8675055*T)*r, F=(93.2720950+483202.0175233*T)*r;
+ let lon=Lp+6.289*Math.sin(Mp)+1.274*Math.sin(2*D-Mp)+0.658*Math.sin(2*D)+0.214*Math.sin(2*Mp)-0.186*Math.sin(M)-0.114*Math.sin(2*F)
+  +0.059*Math.sin(2*D-2*Mp)+0.057*Math.sin(2*D-M-Mp)+0.053*Math.sin(2*D+Mp)+0.046*Math.sin(2*D-M)+0.041*Math.sin(Mp-M)-0.035*Math.sin(D)-0.031*Math.sin(M+Mp);
+ lon=((lon%360)+360)%360;
+ const lat=5.128*Math.sin(F)+0.281*Math.sin(Mp+F)+0.278*Math.sin(Mp-F)+0.173*Math.sin(2*D-F);
+ const eps=23.44*r, dec=Math.asin(Math.sin(lat*r)*Math.cos(eps)+Math.cos(lat*r)*Math.sin(eps)*Math.sin(lon*r))/r;
+ return {lon,dec,lat};
+}
+// Stjärnbildernas gränser längs ekliptikan (ungefärliga, tropisk longitud). Ormbäraren räknas till Skytten, som i Thuns kalender.
+const CONST=[[29.6,'Väduren','eld'],[58.1,'Oxen','jord'],[97.0,'Tvillingarna','luft'],[114.5,'Kräftan','vatten'],[135.6,'Lejonet','eld'],[174.6,'Jungfrun','jord'],
+ [219.8,'Vågen','luft'],[235.9,'Skorpionen','vatten'],[266.7,'Skytten','eld'],[296.2,'Stenbocken','jord'],[327.5,'Vattumannen','luft'],[354.2,'Fiskarna','vatten']];
+const ZOD=[['♈','Väduren'],['♉','Oxen'],['♊','Tvillingarna'],['♋','Kräftan'],['♌','Lejonet'],['♍','Jungfrun'],['♎','Vågen'],['♏','Skorpionen'],['♐','Skytten'],['♑','Stenbocken'],['♒','Vattumannen'],['♓','Fiskarna']];
+function zodOf(lon){return Math.floor(lon/30)%12}
+function natal(){if(!S.birth)return null;const d=new Date(S.birth);if(isNaN(d))return null;const p=moonPos(d);return {lon:p.lon,z:zodOf(p.lon),deg:Math.floor(p.lon%30)}}
+function returnOn(date,lon){const a=new Date(date);a.setHours(0,0,0,0);const b=new Date(a.getTime()+864e5);const da=((moonPos(a).lon-lon)%360+540)%360-180,db=((moonPos(b).lon-lon)%360+540)%360-180;return da<0&&db>=0}
+function nodeOn(date){const a=new Date(date);a.setHours(0,0,0,0);const b=new Date(a.getTime()+864e5);return Math.sign(moonPos(a).lat)!==Math.sign(moonPos(b).lat)}
+let PREC=0;function constOf(lon){let c=CONST[CONST.length-1];for(const k of CONST){if(lon>=k[0]+PREC)c=k}return c}
+const THUN={jord:['Rotdag','för det som ska grunda och slå rot: rotfrukter, jordarbete, det fasta'],
+ vatten:['Bladdag','för det som ska växa i fukt: bladväxter, vattning, det som ska frodas'],
+ luft:['Blomdag','för det som ska blomma och lätta: blommor, luftning, det fina och vackra'],
+ eld:['Fruktdag','för det som ska mogna och bära frukt: frukt, frö, säd, det som ska bära']};
+function himmel(date){
+ const d=new Date(date); d.setHours(12,0,0,0);
+ PREC=(d.getFullYear()-2026)*0.014; const p=moonPos(d), age=moonAge(d);
+ const c=constOf(p.lon), ill=Math.round((1-Math.cos(2*Math.PI*age/SYN))/2*100);
+ const waxing=age<SYN/2;
+ const n=age<1.85?'nymåne':age<5.54?'växande skära':age<9.23?'första kvarteret':age<12.92?'växande':age<16.61?'fullmåne':age<20.3?'avtagande':age<23.99?'sista kvarteret':age<27.68?'avtagande skära':'nymåne';
+ return {age,ill,waxing,name:n,stj:c[1],el:c[2],stigande:(p.lon>=270||p.lon<90),dec:p.dec,z:zodOf(p.lon)};
+}
+function quarterOn(date){ // nymåne, kvarter och fullmåne som infaller under dygnet
+ const a=new Date(date);a.setHours(0,0,0,0);const b=new Date(a.getTime()+864e5);
+ const qa=moonAge(a)/(SYN/4), qb=moonAge(b)/(SYN/4);
+ if(Math.floor(qb)!==Math.floor(qa)||qb<qa){const q=(Math.floor(qb)%4+4)%4;return ['nymåne','första kvarteret','fullmåne','sista kvarteret'][q]}
+ return null;
+}
+function phaseSVG(age,size){
+ const s=size||24, r=s/2-1.5, cx=s/2, cy=s/2, k=Math.cos(2*Math.PI*age/SYN), waxing=age<SYN/2, rx=Math.abs(k)*r;
+ let lit;
+ if(waxing) lit=`M${cx} ${cy-r}A${r} ${r} 0 0 1 ${cx} ${cy+r}A${rx} ${r} 0 0 ${k>0?0:1} ${cx} ${cy-r}z`;
+ else lit=`M${cx} ${cy-r}A${r} ${r} 0 0 0 ${cx} ${cy+r}A${rx} ${r} 0 0 ${k>0?1:0} ${cx} ${cy-r}z`;
+ return `<svg width="${s}" height="${s}" aria-hidden="true"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#1A1F27" stroke="#3A4450" stroke-width=".8"/><path d="${lit}" fill="#D9C98A"/></svg>`;
+}
+function moonNow(size){const h=himmel(new Date());return `<span style="display:inline-flex;align-items:center;gap:4px">${phaseSVG(h.age,size)}<span style="font-size:${Math.round(size*.75)}px;color:var(--muted);line-height:1">${h.waxing?'↑':'↓'}</span></span>`}
+function isLongFast(date){ // onsdagen i månens avtagande fas, närmast sista kvarteret
+ if(date.getDay()!==3) return false; const a=moonAge(new Date(date.getFullYear(),date.getMonth(),date.getDate(),12));
+ return a>=17&&a<24.4;
+}
+let navY=null,navMo=null;
+function mane(){
+ const c=cal(new Date()); const h=himmel(new Date());
+ if(navY===null){navY=c.base.getFullYear();navMo=Math.max(0,c.mo)}
+ const vBase=solFor(navY), vMo=navMo;
+ const head=`<div class="head"><div><p class="lbl" style="color:var(--luft)">Luft</p><h1>Månen</h1><p class="muted small" style="margin:4px 0 0">himlens verkliga måne och stjärnbildernas dagar</p></div>${back('luft')}</div>`;
+ const today_=`<div class="p"><div class="row"><span style="display:flex;align-items:center;gap:12px">${phaseSVG(h.age,40)}<span><span class="serif" style="font-size:22px;color:var(--cream)">${h.name[0].toUpperCase()+h.name.slice(1)}</span><br><span class="muted small">${h.ill} % belyst · ${h.waxing?'växer mot fullmåne':'avtar mot nymåne'}</span></span></span></div>
+ <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line2)"><p class="lbl" style="color:var(--${h.el});margin-bottom:4px">${THUN[h.el][0]} · ${EL[h.el].n.toLowerCase()} · månen i ${h.stj}</p>
+ <p class="small" style="margin:0">${THUN[h.el][1]}.</p><p class="muted small" style="margin:6px 0 0">${h.stigande?'Stigande måne: saven stiger, kraften söker sig uppåt. Gott för det som växer ovan jord och för att skörda.':'Sjunkande måne: kraften söker sig nedåt och inåt. Gott för att plantera, gödsla, beskära och arbeta med rötterna.'}</p></div></div>`;
+ const isCur=navY===c.base.getFullYear()&&navMo===c.mo;
+ const first=new Date(vBase);first.setDate(first.getDate()+1+vMo*28);
+ const last=new Date(first);last.setDate(first.getDate()+27);
+ const navBar=`<div class="row" style="margin-bottom:10px"><button class="btn" data-mnav="-1" aria-label="Föregående månad">‹ ${MON[(vMo+12)%13]}</button><div style="text-align:center"><p class="serif" style="margin:0;font-size:24px;color:var(--cream)">${MON[vMo]}</p><p class="muted" style="margin:0;font-size:11.5px">${first.getDate()}/${first.getMonth()+1} – ${last.getDate()}/${last.getMonth()+1}${isCur?' · nu':''}</p></div><button class="btn" data-mnav="1" aria-label="Nästa månad">${MON[(vMo+1)%13]} ›</button></div>${isCur?'':'<button class="btn gold" data-mnav="0" style="width:100%;margin-bottom:10px">Tillbaka till denna månad</button>'}`;
+ const lead=first.getDay(); let cells='';
+ for(let i=0;i<lead;i++) cells+='<div></div>';
+ for(let i=0;i<28;i++){const d=new Date(first);d.setDate(first.getDate()+i);d.setHours(12);const di=iso(d),isT=di===today(),hh=himmel(d),q=quarterOn(d),wd=d.getDay();
+  const fast=wd===3?(isLongFast(d)?'36 h':'fasta'):''; const NT=natal(); const mine=!!NT&&NT.z===hh.z; const ret=!!NT&&returnOn(d,NT.lon); const hol=(vMo===12&&i===27)||(vMo===0&&i===0); const nod=nodeOn(d); const aps=apsisOn(d);
+  cells+=`<button data-mday="${wd}" style="min-height:84px;border-radius:4px;border:1px solid ${isT||hol?'var(--gold)':mine?'#8C7FB0':q?'#4A4130':'#1E242C'};background:${isT?'rgba(232,194,106,.10)':mine?'rgba(140,127,176,.12)':'transparent'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px 0" aria-label="${i+1} ${MON[c.mo]}, ${hh.name}, ${THUN[hh.el][0].toLowerCase()}${fast?', '+fast:''}">
+  <span style="font-size:12.5px;line-height:1;color:${isT?'var(--gold)':'var(--text)'}">${i+1}</span><span style="font-size:8.5px;line-height:1;color:#6B7684">${d.getDate()}/${d.getMonth()+1}</span>${phaseSVG(hh.age,16)}
+  <span style="width:14px;height:3px;border-radius:2px;background:var(--${hh.el})"></span><span style="font-size:12px;line-height:1;color:${mine?'#C9B8F0':'#9AA4B1'}">${ZOD[hh.z][0]}&#xFE0E;</span>${hol?'<span style="font-size:9px;color:#E8C26A">⊕ hvarv</span>':ret?'<span style="font-size:9px;color:#C9B8F0">frö</span>':nod?'<span style="font-size:9px;color:#D9826E">nod</span>':aps?'<span style="font-size:9px;color:#D9826E">'+(aps==='perigeum'?'perig.':'apog.')+'</span>':''}
+  <span style="font-size:9.5px;line-height:1.1;color:${fast?'var(--eter)':'#C9B98A'}">${fast||(q?q.split(' ')[0].replace('första','1:a').replace('sista','sista'):'')}</span></button>`}
+ if(vMo===12){const mn=solFor(navY+1);mn.setHours(12);const hm=himmel(mn);cells+=`<div style="min-height:84px;border-radius:4px;border:1px solid var(--gold);background:rgba(232,194,106,.16);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center" aria-label="Mödranatt, dagen bortom tiden"><span style="font-size:11px;color:var(--gold);font-family:var(--serif)">Mödra-<br>natt</span>${phaseSVG(hm.age,16)}<span style="font-size:9px;color:#E8C26A">⊕ hvarv</span></div>`}
+ const grid=`<div class="p">${navBar}<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">${ARK.map(a=>`<span style="text-align:center;font-family:var(--label);font-size:10px;color:${SLAGC[a.slag]}">${a.d.slice(0,3)}</span>`).join('')}</div>
+ <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells}</div>
+ <p class="muted small" style="margin:10px 0 0;line-height:1.7">Strecket under månen visar dagens element enligt stjärnbilden:
+ <span style="color:var(--jord)">▬</span> rot · <span style="color:var(--vatten)">▬</span> blad · <span style="color:var(--luft)">▬</span> blom · <span style="color:var(--eld)">▬</span> frukt<br>${vMo===12||vMo===0?'<span style="color:var(--gold)">⊕ hvarv</span> = Solhvarvet, solståndets tre dagar: Jul 28, Mödranatt och Is 1.<br>':''}Tecknet visar månens astrologiska tecken. Ramar: <span style="color:var(--gold)">guld</span> = i dag eller Solhvarvet · <span style="color:#A898D8">violett</span> = månen i ditt födelsemånens tecken · <span style="color:#A8956A">brun</span> = nymåne, kvarter eller fullmåne.<br><span style="color:#D9826E">nod, perig., apog.</span> = ogynnsamma dagar: månen korsar ekliptikan, eller står närmast eller längst från jorden.</p></div>`;
+ const NT=natal(); let nextRet=null; if(NT){for(let i=0;i<32;i++){const d=new Date();d.setDate(d.getDate()+i);if(returnOn(d,NT.lon)){nextRet=d;break}}}
+ const sel=`<div class="p"><p class="lbl">Din måne och fröets dagar</p><p class="small muted" style="margin:0 0 8px">Ange när du föddes. Appen räknar ut var månen stod då. Varje månad när den återvänder dit föds ett nytt frö. Dagarna då månen står i samma tecken markeras i violett, och återkomstens dag med ordet frö.</p>
+ <label class="small muted" for="birthIn">Födelsedag och klockslag (svensk tid)</label>
+ <input id="birthIn" type="datetime-local" data-birth value="${S.birth||''}" style="margin-top:6px">
+ ${NT?`<p class="small" style="margin:10px 0 0">Din måne vid födseln: <span style="color:#C9B8F0">${NT.deg}° i ${ZOD[NT.z][1]} ${ZOD[NT.z][0]}&#xFE0E;</span></p>${nextRet?`<p class="small muted" style="margin:4px 0 0">Nästa återkomst: ${cal(nextRet).txt} (${nextRet.getDate()}/${nextRet.getMonth()+1})</p>`:''}${NT.z===h.z?'<p class="small" style="margin:6px 0 0;color:#C9B8F0">I dag står månen i ditt månens tecken.</p>':''}<p class="muted small" style="margin:6px 0 0">Klockslaget spelar roll, eftersom månen flyttar sig omkring ett halvt tecken per dygn.</p>`:''}</div>`;
+ const guide=`<div class="p"><p class="lbl">Vad månen är bra för</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">Växande måne</span> · det som ska växa och tillföras: så det som växer ovan jord, börja nytt, ta upp näring och kraft. Klipp håret om det ska växa snabbt.</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">Fullmåne</span> · kulmen och fullhet: skörda läkeörter när kraften är som störst, fira, men vila om sömnen blir orolig.</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">Avtagande måne</span> · det som ska minska och släppas: klipp håret om det ska växa långsamt och bli tätt, klipp naglarna, rensa ogräs, städa, fasta och rena.</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">Nymåne</span> · vila och avsikt: så ett frö i tanken, planera, låt kroppen vila.</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">Stigande måne</span> · saven stiger: skörda det som växer ovan jord, ympa, plocka frukt.</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">Sjunkande måne</span> · kraften går nedåt: plantera om, sätt, gödsla, beskär träd och häckar.</p>
+ <p class="small" style="margin:0 0 8px"><span style="color:#D9826E">Ogynnsamma dagar</span> · när månen korsar ekliptikan (nod) eller står närmast jorden (perigeum) eller längst bort (apogeum) avråder Thun från sådd och plantering; dagar att vila jorden.</p>
+ <p class="muted small" style="margin:8px 0 0">Stigande och sjunkande måne, elementdagarna och noderna kommer från Thuns kalender. Råden om hår, naglar och rening kommer från den folkliga månkalendertraditionen, som ofta används tillsammans med den.</p></div>`;
+ return head+today_+grid+sel+guide+`<div class="p"><p class="lbl">Fastan och månen</p><p class="small" style="margin:0">Varje onsdag fastar du 24 timmar. Den onsdag som infaller när månen avtar, närmast sista kvarteret, förlängs fastan till 36 timmar: från tisdagens middag till torsdagens frukost. Då släpper både månen och kroppen taget.</p></div>
+ <div class="p"><p class="lbl">Om stjärnbildsdagarna</p><p class="muted small" style="margin:0">Efter Maria Thuns biodynamiska kalender, som bygger på Rudolf Steiners lantbrukskurs 1924: månen passerar en stjärnbild på två till fyra dagar, och varje stjärnbild hör till ett av de fyra elementen. Stjärnbildernas gränser är avstämda mot en publicerad biodynamisk kalender. Faser, skiften och noder räknas ut astronomiskt och kan avvika upp till någon timme; dagen visas som den är vid middagstid.</p></div>`;
+}
+
+// ---------- Högtiderna: syntes av nordisk tradition och grannarnas ----------
+const HOLINFO={
+'Solhvarvet':{t:'Vintersolståndet, årets midnatt, firat i tre dagar: Jul 28, Mödranatt i mitten, dagen bortom tiden då solen vänder, och Is 1, det nya årets första dag. Solhvarv är det gamla ordet för solstånd, fornnordiskans sólhvǫrf. Det är kärnan i julens tretton heliga nätter.',
+ r:[['Fornnordiskt','Jul, eller midvinterblot, var ett av årets tre stora blot enligt Snorre. Man drack jul till gudarna, för gott år och fred. Håkon den gode flyttade enligt sagan julen till den kristna högtiden.'],
+  ['Anglosaxiskt','Beda berättar att året började med Modranecht, mödrarnas natt.'],
+  ['Keltiskt','I Newgrange på Irland lyser solen vid soluppgången in längs gången till gravkammaren just kring vintersolståndet.'],
+  ['Samiskt','Under mörkertiden väntade man på att solen, Beaivi, skulle återvända.']],
+ s:['Vaka natten igenom och möt solens återkomst i gryningen','Tänd ett ljus i mörkret för det nya året','Ställ fram gröt eller en gåva åt gårdens vätte, som i den svenska tomtegröten','Gör upp året som gått och viga dig åt det som kommer']},
+'Torreblot':{t:'Vårens port. Vintern står på sin höjd, men ljuset växer märkbart. Diserna och de kvinnliga förfäderna hedras.',
+ r:[['Fornnordiskt','Torre är vinterkungen i Eddan. Torreblot nämns i Orkneyingasagan och firas på nytt på Island som þorrablót. I Uppsala hölls disablotet och Distingen i februari.'],
+  ['Keltiskt','Imbolc vid månadsskiftet januari och februari, Brigids högtid, när fåren började ge mjölk.'],
+  ['Svenskt','Kyndelsmäss, ljusmässan den 2 februari.'],
+  ['Samiskt','När solen återvände efter mörkertiden hälsades Beaivi, enligt uppteckningar bland annat med smör på dörrposterna.']],
+ s:['Hälsa solen första gången den syns över horisonten','Hedra diserna: tänd ljus för de kvinnor i ätten som gått före','Rena hemmet inför ljusets återkomst']},
+'Österdag':{t:'Vårdagjämningen, vårens hjärta. Dag och natt är lika långa, och solen går upp rakt i öster.',
+ r:[['Anglosaxiskt','Beda nämner gudinnan Eostre och Eosturmonath, som gett påsken dess namn på engelska och tyska.'],
+  ['Fornnordiskt','Sigerblotet ”mot sommaren” hölls enligt Snorre vid sommarens början, för seger.'],
+  ['Keltiskt','I Cairn T vid Loughcrew lyser solen in på en stenhäll med solsymboler vid dagjämningarna.'],
+  ['Slaviskt och baltiskt','Vinterdockan Marzanna bränns eller dränks; i Lettland gungar man på Lieldienas för att väcka året.']],
+ s:['Se solen gå upp rakt i öster','Tänd en vårbrasa','Färga ägg, livets tecken','Sätt en avsikt för året som nu gror']},
+'Sommarmål':{t:'Sommarens port. Sommarhalvåret börjar, boskapen släpps ut och elden renar.',
+ r:[['Fornnordiskt','Sumarmál var sommarens början i den gamla tvådelade årsräkningen.'],
+  ['Keltiskt','Beltane: man tände eldar och drev boskapen mellan dem för rening och skydd.'],
+  ['Svenskt och finskt','Valborgseldar, att sjunga in våren, och finsk vappu.']],
+ s:['Tänd en eld och gå eller hoppa över den','Plocka gröna kvistar och smycka hemmet','Ta första badet i det fria']},
+'Midsommar':{t:'Sommarsolståndet, sommarens hjärta. Ljusets höjd och årets kortaste natt.',
+ r:[['Svenskt','Midsommarstång, kransar, sju sorters blommor under kudden, och midsommardaggen som ansågs läkande.'],
+  ['Baltiskt och finskt','Jāņi i Lettland och juhannus i Finland, med brasor, kransar och örter.'],
+  ['Keltiskt och brittiskt','Vid Stonehenge står solen upp i linje med Hälstenen vid sommarsolståndet.'],
+  ['Samiskt','Midnattssolens tid, då man enligt uppteckningar hedrade solen med ringar av björklöv.']],
+ s:['Vaka den ljusa natten','Gå barfota i midsommardaggen, Yggdrasils dagg','Plocka läkeörter på midsommarnatten','Bind en krans av sju sorters blommor']},
+'Skördegille':{t:'Höstens port. Den första skörden bärgas och det första brödet bakas av den nya säden.',
+ r:[['Keltiskt','Lughnasadh, guden Lughs högtid, med spel och samlingar på kullar.'],
+  ['Anglosaxiskt','Hlafmæsse, brödmässan, då bröd av ny säd välsignades.'],
+  ['Folktro','I nordtysk folktro lämnades sista kärven kvar åt Wode, alltså Oden, eller hans häst.']],
+ s:['Baka ett bröd av årets säd','Lämna en kärve eller en gåva kvar åt markens makter','Tävla i lekar och styrkeprov']},
+'Västerdag':{t:'Höstdagjämningen, höstens hjärta. Dag och natt är åter lika, och solen går ner rakt i väster.',
+ r:[['Fornnordiskt','Enligt Snorre hölls ett blot vid vinterns början för ett gott år. Vid själva dagjämningen finns inget säkert belagt blot, men skördetacken hör hösten till.'],
+  ['Keltiskt','Cairn T vid Loughcrew lyser upp även vid höstdagjämningen.'],
+  ['Baltiskt och svenskt','Miķeļi i Lettland och Mickelsmäss i Sverige, när böndernas år avslutades.']],
+ s:['Se solen gå ner rakt i väster','Tacka för det som skördats i ditt liv','Väg upp det som varit: balansens dag']},
+'Alvablot':{t:'Vinterns port och vinternätterna. Förfäderna och gårdens andar hedras, och den mörka halvan börjar.',
+ r:[['Fornnordiskt','Skalden Sigvat stängdes ute från en gård i Götaland eftersom man höll alvablot. Det hölls slutet, för gårdens andar och de döda. På Island hölls disablot vid vinternätterna.'],
+  ['Keltiskt','Samhain: gravhögarna stod öppna och kungen höll fest på Tara.'],
+  ['Finskt','Kekri, skördens slut, då förfädernas andar trodde komma på besök.'],
+  ['Svenskt','Allhelgona, med ljus på gravarna.']],
+ s:['Duka en tom plats vid bordet för förfäderna','Tänd ljus på en grav eller vid en gravhög','Berätta om dem som gått före','Sitt ute en stund i mörkret, utesittning']}
+};
+
+function navHTML(){
+ const cv=(view==='dygn'||view==='eter'||view==='timglas'||view==='astro')?'harden':['tid','sol','mane','dag','kodex'].includes(view)?'luft':view==='saga'?'vatten':view==='sekvens'?'jord':view;
+ const it=[['jord','Jord','<path d="M2 3h14L9 16z"/><path d="M4.5 7.5h9"/>'],['luft','Luft','<path d="M9 2l7 13H2z"/><path d="M4.5 10.5h9"/>'],null,['eld','Eld','<path d="M9 2l7 13H2z"/>'],['vatten','Vatten','<path d="M2 3h14L9 16z"/>']];
+ return it.map(x=>x?`<button data-go="${x[0]}" class="${cv===x[0]?'on':''}" style="${cv===x[0]?'color:var(--'+x[0]+')':''}" ${cv===x[0]?'aria-current="page"':''}><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" aria-hidden="true">${x[2]}</svg>${x[1]}</button>`
+ :`<button class="hearth rune" data-go="harden" aria-label="Härden">ᚼ</button>`).join('');
+}
+let lastView=null, fresh=false;
+function render(){
+ fresh=view!==lastView; lastView=view;
+ app.innerHTML = view==='harden'?harden():view==='spegeln'?spegeln():view==='saga'?saga():view==='tid'?tid():view==='sol'?sol():view==='mane'?mane():view==='dygn'?dygn():view==='dag'?dag():view==='timglas'?timglas():view==='kodex'?kodex():view==='astro'?astro():view==='sekvens'?sekvens():elementPage(view);
+ document.getElementById('nav').innerHTML=navHTML();
+}
+
+// ---------- Händelser ----------
+document.addEventListener('click',e=>{
+ const q=s=>e.target.closest(s);
+ if(q('[data-fold]')){const k=q('[data-fold]').dataset.fold;openL[k]=!openL[k];render();return}
+ if(q('[data-qctl]')){const c=q('[data-qctl]').dataset.qctl;
+  if(c==='reset'){Q={run:false,i:0,start:0,acc:0,fin:false};vaka(false)}
+  else if(c==='next'||c==='prev'){Q.i=Math.max(0,Math.min(SEKV.length-1,Q.i+(c==='next'?1:-1)));Q.acc=0;Q.start=Date.now()}
+  else if(Q.run){Q.acc=qEl();Q.run=false;vaka(false)}
+  else{if(Q.fin)Q={run:false,i:0,start:0,acc:0,fin:false};if(Q.i===0&&Q.acc===0)gong();Q.start=Date.now();Q.run=true;vaka(true)}
+  render();return}
+ if(q('[data-qlog]')){if(!done('aktivering',today()))toggle('aktivering',today());render();return}
+ if(q('[data-tpre]')){if(!T.run){tSel=q('[data-tpre]').dataset.tpre;tReset()}render();return}
+ if(q('[data-tset]')){if(!T.run){const [k,v]=q('[data-tset]').dataset.tset.split(':');TPRE[tSel][k]=+v;tReset()}render();return}
+ if(q('[data-tctl]')){const c=q('[data-tctl]').dataset.tctl;
+  if(c==='reset')tReset();
+  else if(c==='klar'){T.acc=tEl();T.run=false;T.fin=true;gong();vaka(false)}
+  else if(T.run){T.acc=tEl();T.run=false;vaka(false)}
+  else{if(T.fin)tReset();if(T.acc===0&&TPRE[tSel].kind!=='intervall')gong();else klocka(true);T.start=Date.now();T.run=true;T.last='';vaka(true)}
+  render();return}
+ if(q('[data-tlog]')){const a=q('[data-tlog]').dataset.tlog;if(!done(a,today()))toggle(a,today());render();return}
+ if(q('[data-kbok]')){kBok=q('[data-kbok]').dataset.kbok;kPost=null;kSkriv=false;render();window.scrollTo(0,0);return}
+ if(q('[data-kpost]')){kPost=+q('[data-kpost]').dataset.kpost;render();window.scrollTo(0,0);return}
+ if(q('[data-kback]')){if(kPost!==null)kPost=null;else{kBok=null;kSkriv=false}render();window.scrollTo(0,0);return}
+ if(q('[data-kskriv]')){kSkriv=!kSkriv;render();return}
+ if(q('[data-kdel]')){const id=q('[data-kdel]').dataset.kdel;S.kodex=(S.kodex||[]).filter(x=>String(x.id)!==id);save();kPost=null;render();return}
+ if(q('[data-preset]')&&!T.run){const pr=q('[data-preset]').dataset.preset;if(tSel!==pr){tSel=pr;tReset()}}
+ const si=e.target.closest('[data-solinfo]'); if(si){solInfo=solInfo===si.dataset.solinfo?null:si.dataset.solinfo;render();return}
+ const dg=e.target.closest('[data-day]'); if(dg){selDay=+dg.dataset.day;view=dg.dataset.zoom?'dag':'tid';picker=false;render();if(dg.dataset.goday||dg.tagName==='BUTTON')window.scrollTo(0,0);return}
+ const md=e.target.closest('[data-mday]'); if(md){selDay=+md.dataset.mday;view='tid';render();window.scrollTo(0,0);return}
+ const t=e.target.closest('button,[data-go]'); if(!t) return;
+ if(t.dataset.mnav!==undefined){const s=+t.dataset.mnav;if(s===0){navY=null;navMo=null}else{navMo+=s;if(navMo>12){navMo=0;navY++}if(navMo<0){navMo=12;navY--}}render();return}
+ if(t.dataset.hol!==undefined){selHol=t.dataset.hol||null;render();if(selHol)window.scrollTo(0,420);return}
+ if(t.dataset.go){view=t.dataset.go;picker=false;render();window.scrollTo(0,0);return}
+ if(t.dataset.tab){if(tabSel===t.dataset.tab&&openL.h)openL.h=false;else{tabSel=t.dataset.tab;openL.h=true}render();return}
+ if(t.dataset.act){const on=toggle(t.dataset.act,today());render();if(on){const a=ACTS[t.dataset.act];toast('+'+Object.values(a.e).reduce((x,y)=>x+y,0)+' dagg · '+Object.keys(a.e).map(k=>EL[k].n).join(' och '))}return}
+ if(t.hasAttribute('data-picker')){picker=!picker;render();return}
+ if(t.dataset.extra){toggle(t.dataset.extra,today(),true);picker=false;render();toast(ACTS[t.dataset.extra].n+' lagd på härden');return}
+ if(t.dataset.del){const i=S.log.findIndex(l=>String(l.t)===t.dataset.del);if(i>=0){S.log.splice(i,1);save();render()}return}
+ if(t.hasAttribute('data-soon')){toast('Det här rummet byggs snart');return}
+ if(t.hasAttribute('data-export')){
+  if(!DL){toast('Att spara kopia går inte i den här vyn');return}
+  DL.save({filename:'livets-rollspel-'+today()+'.json',data:JSON.stringify(S,null,1)}).then(()=>toast('Kopian är sparad')).catch(()=>toast('Kopian sparades inte'));return}
+});
+document.addEventListener('submit',e=>{
+ if(e.target.matches('[data-bloc]')){e.preventDefault();const F=new FormData(e.target),la=parseFloat(String(F.get('lat')).replace(',','.')),lo=parseFloat(String(F.get('lon')).replace(',','.'));if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180){S.birthLoc={lat:la,lon:lo,namn:String(F.get('namn')||'').trim()||'Födelseorten'};save();render()}return}
+ if(e.target.matches('[data-kform]')){e.preventDefault();const F=new FormData(e.target),ti=String(F.get('titel')||'').trim(),tx=String(F.get('text')||'').trim();if(!ti||!tx)return;
+  S.kodex=S.kodex||[];S.kodex.push({id:Date.now(),bok:kBok,titel:ti,text:tx});save();kSkriv=false;render();return}
+ if(e.target.matches('[data-loc]')){e.preventDefault();const F=new FormData(e.target),la=parseFloat(String(F.get('lat')).replace(',','.')),lo=parseFloat(String(F.get('lon')).replace(',','.'));if(isFinite(la)&&isFinite(lo)&&Math.abs(la)<=90&&Math.abs(lo)<=180){S.loc={lat:la,lon:lo,namn:String(F.get('namn')||'').trim()||'Min plats'};save();render()}return}
+ if(e.target.id!=='egen')return; e.preventDefault();
+ const n=document.getElementById('egenNamn').value.trim(), el=document.getElementById('egenEl').value; if(!n) return;
+ const id='egen_'+n.toLowerCase().replace(/[^a-zåäö0-9]+/g,'_');
+ ACTS[id]={n,e:{[el]:8}}; S.custom[id]=ACTS[id]; if(!EXTRA.includes(id)) EXTRA.push(id);
+ toggle(id,today(),true); picker=false; save(); render(); toast(n+' lagd på härden');
+});
+document.addEventListener('change',e=>{
+ if(e.target.matches('[data-birth]')){S.birth=e.target.value||null;save();render();return}
+ if(!e.target.matches('[data-import]'))return; const f=e.target.files[0]; if(!f)return;
+ f.text().then(t=>{try{const d=JSON.parse(t); if(Array.isArray(d.log)){S=Object.assign({log:[],custom:{}},d);Object.assign(ACTS,S.custom);save();render();toast('Kopian är inläst')}}catch(err){toast('Filen gick inte att läsa')}});
+});
+let DL=null;
+try{ if('serviceWorker' in navigator && location.protocol==='https:' && !/claude|anthropic/.test(location.hostname)){navigator.serviceWorker.register('sw.js').catch(()=>{}); if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});} }catch(e){}
+try{ if(window.claude&&window.claude.use) window.claude.use('downloads').then(d=>{DL=d}).catch(()=>{}); }catch(e){}
+S.custom && Object.keys(S.custom).forEach(id=>{if(!EXTRA.includes(id))EXTRA.push(id)});
+render();
+spinSolids(0);
+setInterval(()=>{const el=document.getElementById('dayclock');if(el)el.innerHTML=dayClockSVG()},30000);
+</script>
+</body>
+</html>
