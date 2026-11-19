@@ -1031,6 +1031,9 @@ function trs(t){if(!t)return t;if(EN[t]!==undefined)return EN[t];for(const [re,t
  if(/^· /.test(t)){const r=trs(t.slice(2));if(r!==t.slice(2))return '· '+r}
  if(/^✓ /.test(t)){const r=trs(t.slice(2));if(r!==t.slice(2))return '✓ '+r}
  const m=t.match(/^(.*?)(\s*[›‹]\s*)$/);if(m&&m[1]&&trs(m[1])!==m[1])return trs(m[1])+m[2];
+ if(t.includes(' → ')){const p=t.split(' → '),r=p.map(x=>trs(x));if(r.some((x,i)=>x!==p[i]))return r.join(' → ')}
+ const pre=t.match(/^([\u3400-\u9fff\u0590-\u05ff]+|[\u2648-\u2653]\uFE0E?) (.+)$/);if(pre){const r=trs(pre[2]);if(r!==pre[2])return pre[1]+' '+r}
+ if(t.includes(', ')){const p=t.split(', '),r=p.map(x=>trs(x));if(r.some((x,i)=>x!==p[i]))return r.join(', ')}
  return t}
 function trDom(root){if(S.lang!=='en'||!root||!root.ownerDocument)return;const d=root.ownerDocument,w=d.createTreeWalker(root,4);let n;const nodes=[];while((n=w.nextNode()))nodes.push(n);
  nodes.forEach(n=>{const raw=n.nodeValue,t=raw.replace(/\s+/g,' ').trim();if(!t||!/[A-Za-zÅÄÖåäö]/.test(t))return;const r=trs(t);if(r!==t)n.nodeValue=raw.replace(raw.trim(),r)});
@@ -1294,41 +1297,327 @@ const ANCH=[...HOL.map((h,i)=>[h[2],i*45]),[365,360]];
 function wheelAng(idx){for(let i=0;i<ANCH.length-1;i++){const [a0,g0]=ANCH[i],[a1,g1]=ANCH[i+1];if(idx>=a0&&idx<=a1)return g0+(g1-g0)*(idx-a0)/(a1-a0)}return 0}
 let selHol=null;
 function holDetail(n){const I=HOLINFO[n];const prim=HOL.find(x=>x[0]===n)[3];return `<div class="p" style="border-color:#4A4130"><div class="row"><p class="lbl" style="color:${prim?'#E8C26A':'#D9C98A'};margin:0">${prim?'⊕ hjärta':'◇ port'}</p><button class="btn" data-hol="" aria-label="Stäng">✕</button></div><div style="display:flex;align-items:center;gap:14px;margin:6px 0 8px"><span class="rune" style="font-size:48px;color:var(--gold)">${HRUNE[n][0]}</span><div><p class="serif" style="margin:0;font-size:28px;color:var(--cream)">${n}</p><p class="muted small" style="margin:0">${HRUNE[n][1]} · ${HRUNE[n][2]}</p></div></div><p style="margin:0 0 10px">${I.t}</p><p class="lbl">Rötterna</p>${I.r.map(([k,v])=>`<p class="small" style="margin:0 0 8px"><span style="color:var(--gold)">${k}.</span> ${v}</p>`).join('')}<p class="lbl" style="margin-top:12px">Riter att göra</p>${I.s.map(x=>`<p class="small" style="margin:0 0 6px">ᛉ ${x}</p>`).join('')}</div>`}
+// ---------- Årshjulet: fyra väderstreck, fyra traditioner i varje ----------
+let solLins='N', selASeg=null, ASEG=[], SOLNOW=0;
+const LINS={N:['Norr','Norden','ᛁ'],O:['Öster','Österlandet','ᛞ'],S:['Söder','Ursprunget','ᛋ'],V:['Väster','Västerlandet','ᛟ']};
+const DMS=864e5, dm=(y,m,d)=>new Date(y,m-1,d), addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const d0=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+function wdIn(y,m,a,b,wd){for(let d=a;d<=b;d++){const x=dm(y,m,d);if(x.getDay()===wd)return x}return dm(y,m,a)}
+function arcP(a0,a1,r0,r1){const P=(a,r)=>{const t=(a-90)*Math.PI/180;return [r*Math.cos(t),r*Math.sin(t)]},L=a1-a0>180?1:0,[x0,y0]=P(a0,r1),[x1,y1]=P(a1,r1),[x2,y2]=P(a1,r0),[x3,y3]=P(a0,r0),f=v=>v.toFixed(2);
+ return `M${f(x0)} ${f(y0)}A${r1} ${r1} 0 ${L} 1 ${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}A${r0} ${r0} 0 ${L} 0 ${f(x3)} ${f(y3)}z`}
+function pt(a,r){const t=(a-90)*Math.PI/180;return [r*Math.cos(t),r*Math.sin(t)]}
+function tLab(a,r,txt,fs,fill,fam,ls,w){a=((a%360)+360)%360;const [x,y]=pt(a,r),rot=(a>90&&a<270)?a+180:a;
+ return `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" transform="rotate(${rot.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)})" text-anchor="middle" dominant-baseline="central" font-size="${fs.toFixed(2)}" fill="${fill}" font-family="${fam||'Jost,sans-serif'}"${ls?` letter-spacing="${ls}"`:''}${w?` font-weight="${w}"`:''} style="pointer-events:none">${txt}</text>`}
+function dIdx(c,d){return Math.round((d0(d)-c.base)/DMS)}
+const AI=i=>wheelAng(Math.max(0,Math.min(365,i)));
+function segsOf(c,list){const out=[];for(let i=0;i<list.length-1;i++){let s=dIdx(c,list[i].d),e=dIdx(c,list[i+1].d);if(e<=0||s>=365)continue;s=Math.max(s,0);e=Math.min(e,365);if(e<=s)continue;out.push({...list[i],end:list[i+1].d,a0:AI(s),a1:AI(e)})}return out}
+function curOf(segs){return segs.find(s=>s.a0<=SOLNOW&&SOLNOW<s.a1)||segs[segs.length-1]}
+function ringSegs(G,segs,r0,r1,o={}){const m=(r0+r1)/2,h=r1-r0;
+ segs.forEach(s=>{const on=s.a0<=SOLNOW&&SOLNOW<s.a1,id=ASEG.push(s.info||{t:s.lab})-1;
+  const fill=o.colored?`fill="${s.col}" fill-opacity="${on?(o.opOn||.42):(o.op||.17)}"`:`fill="#E8C26A" fill-opacity="${on?.17:0}"`;
+  G.push(`<path data-aseg="${id}" d="${arcP(s.a0,s.a1,r0,r1)}" ${fill} stroke="${o.colored?'#07090C':'#2A3340'}" stroke-width="${o.colored?.9:.6}" style="cursor:pointer"/>`);
+  if(s.lab&&!o.nolab){const len=(s.a1-s.a0)*Math.PI/180*(o.lr||m),fs=Math.min(o.fs||h*.42,len/(s.lab.length*.58));
+   if(fs>=3.4)G.push(tLab((s.a0+s.a1)/2,o.lr||m,s.lab,fs,on?'#F1E6C8':(s.lc||o.lc||(o.colored?s.col:'#A79F86')),o.fam,o.ls))}});
+ G.push(`<circle r="${r0}" fill="none" stroke="#232A33" stroke-width=".5" style="pointer-events:none"/><circle r="${r1}" fill="none" stroke="#232A33" stroke-width=".5" style="pointer-events:none"/>`)}
+function markers(G,c,list,r0,r1,col){const rm=r1-(r1-r0)*.28,fs=Math.min(5.2,(r1-r0)*.3);list.forEach(([d,n,info])=>{const i=dIdx(c,d);if(i<0||i>365)return;const a=AI(i),[x0,y0]=pt(a,r0),[x1,y1]=pt(a,r1),id=ASEG.push(info)-1;
+ G.push(`<path d="M${x0.toFixed(2)} ${y0.toFixed(2)}L${x1.toFixed(2)} ${y1.toFixed(2)}" stroke="${col}" stroke-width="1.3" style="pointer-events:none"/>`);
+ const [cx,cy]=pt(a,rm);G.push(`<circle data-aseg="${id}" cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="2.6" fill="#07090C" stroke="${col}" stroke-width="1" style="cursor:pointer"/>`);
+ const off=(n.length*fs*.55/2+4.5)/rm*57.2958;G.push(tLab(a+off,rm,n,fs,col))})}
+// sol i 15-gradersteg (solperioder, zodiak, årstider)
+let TERMC={};
+function terms(base){const k=iso(base);if(TERMC[k])return TERMC[k];const out=[];let prev=sunLon(new Date(base.getFullYear(),base.getMonth(),base.getDate()-61,12));
+ for(let i=-60;i<=430;i++){const d=new Date(base.getFullYear(),base.getMonth(),base.getDate()+i,12),l=sunLon(d),a=Math.floor(prev/15),b=Math.floor(l/15);if(a!==b)out.push({d:d0(d),k:b%24});prev=l}
+ return TERMC[k]=out}
+
+// ---- NORR ----
+const FORNI={'Gormánuður':'slaktmånaden, vinterns första','Ýlir':'julmånaden','Mörsugur':'märgsugaren, den magra tiden','Þorri':'den stränga vintern, midvinterns fest','Góa':'Torres dotter, senvintern','Einmánuður':'den ensamma månaden, vinterns sista','Harpa':'den första sommarmånaden','Skerpla':'försommaren','Sólmánuður':'solmånaden','Aukanætur':'de fyra extranätterna mitt i sommaren','Heyannir':'höskörden','Tvímánuður':'två månader kvar till vintern','Haustmánuður':'höstmånaden'};
+function fornList(Y){const L=[];for(const y of [Y-1,Y,Y+1]){const W0=wdIn(y-1,10,21,27,6),S0=wdIn(y,4,19,25,4),H0=wdIn(y,7,23,29,0);
+ ['Gormánuður','Ýlir','Mörsugur','Þorri','Góa','Einmánuður'].forEach((n,i)=>L.push({d:addD(W0,30*i),lab:n,half:'vetr'}));
+ ['Harpa','Skerpla','Sólmánuður'].forEach((n,i)=>L.push({d:addD(S0,30*i),lab:n,half:'sumar'}));
+ if(addD(S0,90)<H0)L.push({d:addD(S0,90),lab:'Aukanætur',half:'sumar'});
+ ['Heyannir','Tvímánuður','Haustmánuður'].forEach((n,i)=>L.push({d:addD(H0,30*i),lab:n,half:'sumar'}))}
+ L.sort((a,b)=>a.d-b.d);L.forEach(x=>x.info={t:x.lab,s:'Fornnordisk månad · '+(x.half==='vetr'?'vinterhalvåret':'sommarhalvåret'),x:FORNI[x.lab]});return L}
+const SAMI=[['Dálvi','Vinter','vila på vinterbetet i mörkret',12,1],['Giđđadálvi','Vårvinter','ljuset återvänder, skaren bär och flytten mot kalvningslandet börjar',3,1],['Giđđa','Vår','kalvningen',5,1],['Giđđageassi','Vårsommar','grönskan och midnattssolen',6,1],['Geassi','Sommar','kalvmärkning uppe på fjället',7,1],['Čakčageassi','Höstsommar','bär, svamp och de första kalla nätterna',8,15],['Čakča','Höst','brunsten',9,15],['Čakčadálvi','Höstvinter','första snön och flytten mot vinterlandet',11,1]];
+function samiList(Y){const L=[];for(const y of [Y-1,Y,Y+1])SAMI.forEach((s,i)=>L.push({d:dm(i===0?y-1:y,s[3],s[4]),lab:s[1],sami:s[0],txt:s[2],info:{t:s[1]+' · '+s[0],s:'Samisk årstid',x:s[2]}}));return L.sort((a,b)=>a.d-b.d)}
+const KELTF=[[11,1,'Samhain','sommarens slut och det nya året; slöjan till de döda är tunn'],[2,1,'Imbolc','Brigids fest: mjölken och ljuset återvänder'],[5,1,'Beltane','Bels eld: boskapen drivs mellan två eldar ut på bete'],[8,1,'Lughnasadh','Lughs fest: den första skörden']];
+function keltList(Y){const L=[];for(const y of [Y-1,Y,Y+1]){L.push({d:dm(y-1,11,1),lab:'Mörka halvan',col:'#3E4A5C',info:{t:'Mörka halvan',s:'Keltiskt · från Samhain till Beltane',x:'vila, förfäder, berättelser och det inre'}});L.push({d:dm(y,5,1),lab:'Ljusa halvan',col:'#B8A15E',info:{t:'Ljusa halvan',s:'Keltiskt · från Beltane till Samhain',x:'växt, bete, arbete och det yttre'}})}return L.sort((a,b)=>a.d-b.d)}
+const NATUR=['Domherrar och talgoxar vid fågelbordet, älgen fäller sina horn','Korpen häckar först av alla, ugglorna ropar i natten','Sånglärkan och tofsvipan kommer, hasselns hängen blommar','Tranorna dansar, blåsippor och vitsippor, grodorna leker','Göken gal, björken slår ut, gäddan har lekt','Midnattsljus, ängsblommor, fågelungarna flyger ut','Smultron och blåbär, åskan och slåttern','Lingon och svamp, flyttfåglarna samlas','Tranor och gäss drar söderut, älgbrunsten, löven gulnar','Löven faller, de första frostnätterna, björnen söker ide','Björnen sover, fjällharen och hermelinen blir vita, sjöarna lägger sig','Mörkertiden, rimfrost, sidensvansar i rönnarna'];
+const MARKD=[[1,6,'Trettondagen'],[1,13,'Tjugondag Knut'],[1,25,'Pålsmäss'],[2,2,'Kyndelsmäss'],[2,24,'Mattias'],[3,12,'Gregorius'],[3,25,'Vårfrudagen'],[4,14,'Tiburtius, sommarens första dag'],[4,30,'Valborg'],[6,24,'Midsommar, Johannes'],[7,25,'Jakob'],[8,10,'Larsmäss'],[8,24,'Bartolomeus'],[9,29,'Mikael'],[10,14,'Vinternatt'],[10,28,'Simon och Judas'],[11,1,'Helgonmäss'],[11,11,'Mårten'],[11,23,'Klemet'],[11,25,'Katarina'],[11,30,'Anders'],[12,13,'Lucia'],[12,21,'Tomas'],[12,25,'Jul'],[12,26,'Staffan']];
+const STAV=['ᚠ','ᚢ','ᚦ','ᚮ','ᚱ','ᚴ','ᚼ'];
+function dagLangd(d){const {lat,lon}=loc(),s=solDag(d,lat,lon);return s.polar==='dag'?24:s.polar==='natt'?0:s.set-s.rise}
+
+// ---- ÖSTER ----
+const WX={vatten:['Vatten','njurar och urinblåsa','rädsla och vilja','svart','salt','#8FB3C9'],tra:['Trä','lever och gallblåsa','ilska och växtkraft','grönt','surt','#8FB58A'],eld:['Eld','hjärta och tunntarm','glädje','rött','bittert','#D8834A'],jord:['Jord','mjälte och mage','omsorg och grubbel','gult','sött','#C2A86E'],metall:['Metall','lungor och tjocktarm','sorg och släppande','vitt','starkt','#C9CED6']};
+function wxList(T){const L=[];T.forEach(t=>{if(t.k===21)L.push({d:t.d,w:'tra'});if(t.k===3)L.push({d:t.d,w:'eld'});if(t.k===9){L.push({d:addD(t.d,-18),w:'jord'});L.push({d:t.d,w:'metall'})}if(t.k===15)L.push({d:t.d,w:'vatten'})});
+ return L.sort((a,b)=>a.d-b.d).map(x=>{const W=WX[x.w];return {...x,lab:W[0].toUpperCase(),col:W[5],info:{t:W[0]+' · '+W[1],s:'De fem faserna',x:'känsla: '+W[2]+' · färg: '+W[3]+' · smak: '+W[4]}}})}
+const RITU=[['Shishira','senvintern','kapha samlas','#C2A86E',1,14],['Vasanta','våren','kapha blossar upp','#C2A86E',3,14],['Grishma','sommarhettan','vata samlas, kapha lugnar sig','#B9A3D9',5,14],['Varsha','regntiden','vata blossar upp, pitta samlas','#B9A3D9',7,16],['Sharad','hösten','pitta blossar upp, vata lugnar sig','#D8834A',9,16],['Hemanta','förvintern','pitta lugnar sig, kroppen är som starkast','#E8C26A',11,16]];
+function rituList(Y){const L=[];for(const y of [Y-1,Y,Y+1])RITU.forEach((r,i)=>{const ut=i<3;L.push({d:dm(y,r[4],r[5]),lab:r[0],col:r[3],info:{t:r[0]+' · '+r[1],s:'Ayurveda · '+(ut?'solens norrgång, kraften tas':'solens sydgång, kraften ges'),x:r[2]}})});return L.sort((a,b)=>a.d-b.d)}
+const ICH=[[17,'Fu','復','Återkomsten',1,1,'ljuset vänder: ett yang föds under fem yin'],[19,'Lin','臨','Närmandet',2,1,'ljuset närmar sig och växer'],[21,'Tai','泰','Freden',3,1,'himmel och jord i jämvikt'],[23,'Da Zhuang','大壯','Den stora kraften',4,1,'yang tar övertaget'],[1,'Guai','夬','Genombrottet',5,1,'bara ett yin kvar överst'],[3,'Qian','乾','Det skapande',6,1,'sex yang: ljuset på sin höjd'],[5,'Gou','姤','Mötet',1,0,'det första yin föds under fem yang'],[7,'Dun','遯','Tillbakadragandet',2,0,'mörkret växer, dra dig tillbaka i tid'],[9,'Pi','否','Stillaståendet',3,0,'himmel och jord går isär'],[11,'Guan','觀','Betraktandet',4,0,'yin tar övertaget, se och begrunda'],[13,'Bo','剝','Söndervittringen',5,0,'bara ett yang kvar överst'],[15,'Kun','坤','Det mottagande',6,0,'sex yin: mörkret på sin höjd före vändningen']];
+function ichList(T){const L=[];T.forEach(t=>{const h=ICH.find(x=>x[0]===t.k);if(h)L.push({d:t.d,h,lab:h[3],info:{t:h[2]+' '+h[1]+' · '+h[3],s:'I Ching · årets tolv hexagram',x:h[6]}})});return L.sort((a,b)=>a.d-b.d)}
+const SP24=[['春分','Vårdagjämning','Dagjämning'],['清明','Klart ljus'],['穀雨','Sädesregn'],['立夏','Sommarstart'],['小滿','Små ax'],['芒種','Axsådd'],['夏至','Sommarsolstånd','Solstånd'],['小暑','Lite hetta'],['大暑','Stor hetta'],['立秋','Höststart'],['處暑','Hettan går'],['白露','Vit dagg'],['秋分','Höstdagjämning','Dagjämning'],['寒露','Kall dagg'],['霜降','Frostfall'],['立冬','Vinterstart'],['小雪','Lite snö'],['大雪','Stor snö'],['冬至','Vintersolstånd','Solstånd'],['小寒','Lite kyla'],['大寒','Stor kyla'],['立春','Vårstart'],['雨水','Regnvatten'],['驚蟄','Insekterna vaknar','Uppvaknande']];
+function spList(T){return T.map(t=>{const s=SP24[t.k];return {d:t.d,k:t.k,lab:s[2]||s[1],info:{t:s[0]+' · '+s[1],s:'De 24 solperioderna',x:'solen står på '+((t.k*15)%360)+'° längs ekliptikan'}}})}
+const STAM='甲乙丙丁戊己庚辛壬癸',GREN='子丑寅卯辰巳午未申酉戌亥',STEL=['Trä','Trä','Eld','Eld','Jord','Jord','Metall','Metall','Vatten','Vatten'],DJUR=['råttans','oxens','tigerns','harens','drakens','ormens','hästens','getens','apans','tuppens','hundens','grisens'];
+function kinNyar(y){let prev=moonAge(new Date(Date.UTC(y,0,20,16)));for(let i=21;i<=52;i++){const a=moonAge(new Date(Date.UTC(y,0,i,16)));if(a<prev)return new Date(y,0,i);prev=a}return dm(y,2,1)}
+function kinAr(d){let y=d.getFullYear();const ny=kinNyar(y);if(d<ny)y--;const s=(y-4)%10,g=(y-4)%12;return {ch:STAM[s]+GREN[g],namn:STEL[s]+DJUR[g]+' år',yy:(s%2?'yin':'yang')+'-'+STEL[s].toLowerCase(),fran:y===d.getFullYear()?ny:kinNyar(y)}}
+
+// ---- SÖDER ----
+const MHJ=[['Norr','vinter','de äldre och visdomen','sötgräs','vit','#ECE6D6',315,45],['Öster','vår','födelsen och gryningen','tobak','gul','#E2C34E',45,135],['Söder','sommar','ungdomen och växandet','ceder','röd','#C2483A',135,225],['Väster','höst','vuxenlivet och insikten','salvia','svart','#4A433C',225,315]];
+const GAH=[[4,30,'Maidyozarem','Himlen'],[6,29,'Maidyoshahem','Vattnet'],[9,12,'Paitishahem','Jorden'],[10,12,'Ayathrem','Växterna'],[12,31,'Maidyarem','Djuren'],[3,16,'Hamaspathmaedaem','Människan']];
+function gahList(Y){const L=[];for(const y of [Y-1,Y,Y+1])GAH.forEach(g=>L.push({d:dm(y,g[0],g[1]),lab:g[3],info:{t:g[3]+' · '+g[2],s:'Persien · de sex skapelsefesterna',x:'tiden efter festen för '+g[3].toLowerCase()+'s skapelse'}}));return L.sort((a,b)=>a.d-b.d)}
+const AZT=[['Atlcahualo','vattnet hålls tillbaka','Tlaloc och regnet'],['Tlacaxipehualiztli','jorden byter hud','Xipe Totec, förnyelsen'],['Tozoztontli','den lilla vakan','Coatlicue, jorden'],['Huey Tozoztli','den stora vakan','Centeotl, majsen'],['Toxcatl','torkan','Tezcatlipoca, den rökande spegeln'],['Etzalcualiztli','bönmåltiden','Tlaloc, regnet'],['Tecuilhuitontli','herrarnas lilla fest','Huixtocihuatl, saltet'],['Huey Tecuilhuitl','herrarnas stora fest','Xilonen, den unga majsen'],['Tlaxochimaco','blommorna ges','Huitzilopochtli, solen'],['Xocotl Huetzi','frukten faller','Xiuhtecuhtli, elden'],['Ochpaniztli','sopandet','Toci, gudarnas moder'],['Teotleco','gudarna kommer','alla gudarnas återkomst'],['Tepeilhuitl','bergens fest','bergen och regnet'],['Quecholli','den dyrbara fjädern','Mixcoatl, jakten'],['Panquetzaliztli','fanorna höjs','Huitzilopochtli, solen'],['Atemoztli','vattnet stiger ner','Tlaloc, regnet'],['Tititl','sträckandet','Ilamatecuhtli, den gamla modern'],['Izcalli','återväxten','Xiuhtecuhtli, elden'],['Nemontemi','de fem tomma dagarna','vila och väntan']];
+function aztList(Y){const L=[];for(const y of [Y-1,Y,Y+1])AZT.forEach((a,i)=>L.push({d:addD(dm(y,2,2),20*i),lab:a[0],info:{t:a[0]+' · '+a[1],s:'Aztekernas årsfester · enligt Sahagún',x:a[2]}}));return L.sort((a,b)=>a.d-b.d)}
+const HAAB=[["Pop","mattan, härskarens säte"],["Wo",""],["Sip",""],["Sotz'","fladdermusen"],["Sek",""],["Xul","hunden"],["Yaxk'in","den nya solen"],["Mol","samlandet"],["Ch'en","grottan och brunnen"],["Yax","det gröna och nya"],["Sak'","det vita"],["Keh","hjorten, det röda"],["Mak","inneslutningen"],["K'ank'in","den gula solen"],["Muwan","ugglan"],["Pax","trumman"],["K'ayab","sköldpaddan"],["Kumk'u",""],["Wayeb","de fem namnlösa dagarna"]];
+const TZK=[["Imix","krokodilen, urvattnet"],["Ik'","vinden och anden"],["Ak'b'al","natten och mörkret"],["K'an","majsen och fröet"],["Chikchan","ormen"],["Kimi","döden och förvandlingen"],["Manik'","hjorten"],["Lamat","stjärnan, Venus"],["Muluk","vattnet"],["Ok","hunden"],["Chuwen","apan, skaparen"],["Eb'","vägen"],["B'en","vassen och säden"],["Ix","jaguaren"],["Men","örnen"],["K'ib'","gamen och visdomen"],["Kab'an","jorden"],["Etz'nab'","flintan"],["Kawak","stormen"],["Ajaw","solen och herren"]];
+function mayaDag(d){const n=Math.round(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/DMS)+2440588-584283,h=((n+348)%365+365)%365;return {tn:((n+3)%13+13)%13+1,ts:((n+19)%20+20)%20,hm:Math.floor(h/20),hd:h%20}}
+function haabList(c){const L=[];for(let i=-25;i<=395;i++){const d=addD(c.base,i),m=mayaDag(d);if(m.hd===0)L.push({d,lab:HAAB[m.hm][0],info:{t:HAAB[m.hm][0],s:'Maya · solåret Haab’',x:HAAB[m.hm][1]||'en av de arton månaderna på tjugo dagar'}})}return L}
+
+// ---- VÄSTER ----
+const TEMP={0:['Luft','sangvinisk','blodet','varmt och fuktigt','#D9C98A'],6:['Eld','kolerisk','den gula gallan','varmt och torrt','#D8834A'],12:['Jord','melankolisk','den svarta gallan','kallt och torrt','#C2A86E'],18:['Vatten','flegmatisk','slemmet','kallt och fuktigt','#8FB3C9']};
+function tempList(T){return T.filter(t=>TEMP[t.k]).map(t=>{const x=TEMP[t.k];return {d:t.d,lab:x[0].toUpperCase()+' · '+x[1],col:x[4],info:{t:x[0]+' · '+x[1],s:'Elementen och de fyra temperamenten',x:x[3]+' · vätskan: '+x[2]}}})}
+const ZS=[['♈','Väduren','Kalcinering','att bränna till aska: det gamla prövas i eld'],['♉','Oxen','Koagulering','det lösta stelnar till form'],['♊','Tvillingarna','Fixering','det flyktiga görs fast'],['♋','Kräftan','Upplösning','det stela löses i vatten'],['♌','Lejonet','Digerering','långsam mognad i värme'],['♍','Jungfrun','Destillation','det rena stiger och fångas'],['♎','Vågen','Sublimering','det fasta blir ande'],['♏','Skorpionen','Separation','det fina skiljs från det grova'],['♐','Skytten','Cerering','materien mjukas som vax'],['♑','Stenbocken','Jäsning','nytt liv ur förruttnelsen'],['♒','Vattumannen','Förökning','stenens kraft mångfaldigas'],['♓','Fiskarna','Projektion','stenen kastas på metallen och förvandlar den']];
+const KAB=[['Nisan','ה','He','talet'],['Ijar','ו','Vav','tanken'],['Sivan','ז','Zajin','gången'],['Tammuz','ח','Chet','synen'],['Av','ט','Tet','hörseln'],['Elul','י','Jod','handlingen'],['Tishri','ל','Lamed','föreningen'],['Cheshvan','נ','Nun','lukten'],['Kislev','ס','Samech','sömnen'],['Tevet','ע','Ajin','vreden'],['Shevat','צ','Tsadi','smaken'],['Adar','ק','Qof','skrattet']];
+function zodList(T){return T.filter(t=>t.k%2===0).map(t=>{const z=t.k/2,Z=ZS[z],K=KAB[z];return {d:t.d,z,lab:Z[2],info:{t:Z[0]+'︎ '+Z[1]+' · '+Z[2],s:'Zodiaken och alkemins tolv operationer',x:Z[3]},kinfo:{t:K[1]+' '+K[2]+' · '+K[3],s:'Kabbalan · Sefer Yetzirah · '+K[0]+', ungefär',x:'månadens bokstav och den förmåga den styr: '+K[3]}}})}
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),n=h+l-7*m+114;return dm(y,Math.floor(n/31),n%31+1)}
+function advent(y){const x=dm(y,12,25),w=x.getDay();return addD(x,-((w===0?7:w)+21))}
+const KF={violett:'#7E62A8',vitt:'#E9E4D8',gront:'#6E9A62',rott:'#B5523E'};
+function kyrkList(Y){const L=[];for(const y of [Y-1,Y,Y+1]){const E=easter(y);
+ L.push({d:advent(y-1),lab:'Advent',col:KF.violett,x:'väntan och förberedelse'},{d:dm(y-1,12,25),lab:'Julen',col:KF.vitt,x:'ljusets födelse'},{d:dm(y,1,7),lab:'Trettondagstiden',col:KF.gront,x:'ljuset sprids'},{d:addD(E,-46),lab:'Fastan',col:KF.violett,x:'rening och försakelse'},{d:E,lab:'Påsktiden',col:KF.vitt,x:'uppståndelsen'},{d:addD(E,49),lab:'Pingst',col:KF.rott,x:'andens eld'},{d:addD(E,56),lab:'Trefaldighetstiden',col:KF.gront,x:'växandet, livet i vardagen'})}
+ L.sort((a,b)=>a.d-b.d);L.forEach(k=>k.info={t:k.lab,s:'Kyrkoåret · färg: '+Object.keys(KF).find(n=>KF[n]===k.col).replace('gront','grönt').replace('rott','rött'),x:k.x});return L}
+const STEINER=[['Påsk','uppståndelsen: livet segrar över döden'],['Johannes','själen andas ut i sommarens ljus'],['Mikael','modet och viljan när naturen dör'],['Julen','ljusets födelse i mörkret']];
+function steinerDates(y){const E=easter(y);return [[E,'Påsk'],[dm(y,6,24),'Johannes'],[dm(y,9,29),'Mikael'],[dm(y,12,25),'Julen']]}
+function sjalVecka(d){let E=easter(d.getFullYear());if(d<E)E=easter(d.getFullYear()-1);const w=Math.min(52,Math.floor((d0(d)-E)/DMS/7)+1);return {w,spegel:53-w}}
+
+// ---- hjulet ----
+function solHjul(c){
+ ASEG=[];SOLNOW=wheelAng(c.idx);const G=[],Y=c.base.getFullYear()+1,T=terms(c.base),NOW={};
+ const core=46,R=172,md=MODE(),all=md==='allt',L=md==='enkel'?'E':solLins;
+ // ringarna för väderstrecket
+ const R_=[];
+ const add=(w,fn)=>R_.push([w,fn]);
+ const mon=(r0,r1)=>{ringSegs(G,Array.from({length:13},(_,m)=>({a0:wheelAng(1+m*28),a1:wheelAng(1+m*28+28),lab:MON[m],info:{t:MON[m],s:'LifOS-månad · '+MINFO[m][0],x:'förmåga: '+MINFO[m][1]}})),r0,r1,{lc:'#7C8794',fs:7})};
+ const ljus=(r0,r1)=>{const dl=[];for(let i=0;i<366;i++)dl.push(dagLangd(addD(c.base,i)));const mn=Math.min(...dl),mx=Math.max(...dl)||1;
+   for(let i=0;i<365;i++){const t=(dl[i]-mn)/((mx-mn)||1);G.push(`<path d="${arcP(AI(i),AI(i+1)+.25,r0,r0+(r1-r0)*(.25+.75*t))}" fill="rgb(${Math.round(36+t*160)},${Math.round(42+t*120)},${Math.round(56+t*28)})" style="pointer-events:none"/>`)}
+   const h=x=>Math.floor(x)+' h '+String(Math.round((x%1)*60)).padStart(2,'0');G.push(tLab(8,r0+(r1-r0)*.42,h(dl[0]),Math.min(5.5,(r1-r0)*.45),'#C9CED6'));G.push(tLab(188,r0+(r1-r0)*.5,h(mx),Math.min(5.5,(r1-r0)*.45),'#1A1A1A',null,null,'bold'));NOW.ljus={dl,mn,mx}};
+ if(L==='E'){add(1,mon);add(.7,ljus)}
+ if(L==='N'){
+  add(1,(r0,r1)=>{const s=segsOf(c,samiList(Y));NOW.sami=curOf(s);ringSegs(G,s,r0,r1,{fam:'Cormorant Garamond,serif',lc:'#B7C3CF',fs:8})});
+  if(all)add(1,(r0,r1)=>{const s=segsOf(c,keltList(Y));NOW.kelt=curOf(s);ringSegs(G,s,r0,r1,{colored:true,op:.22,opOn:.32,lr:r0+(r1-r0)*.3,fs:5,ls:.8,lc:'#9AA4B1'});
+   const mk=[];for(const y of [Y-1,Y])KELTF.forEach(k=>mk.push([dm(y,k[0],k[1]),k[2],{t:k[2],s:'Keltiska eldfester',x:k[3]}]));markers(G,c,mk,r0,r1,'#D9C98A')});
+  add(1.15,(r0,r1)=>{const s=segsOf(c,fornList(Y));NOW.forn=curOf(s);ringSegs(G,s,r0,r1,{fam:'Cormorant Garamond,serif',fs:8});
+   for(const y of [Y-1,Y]){[wdIn(y,4,19,25,4),wdIn(y,10,21,27,6)].forEach(d=>{const i=dIdx(c,d);if(i>=0&&i<=365){const a=AI(i),[x0,y0]=pt(a,r0-1),[x1,y1]=pt(a,r1+1);G.push(`<path d="M${x0.toFixed(2)} ${y0.toFixed(2)}L${x1.toFixed(2)} ${y1.toFixed(2)}" stroke="#D6CAA6" stroke-width="1.6" style="pointer-events:none"/>`)}})}});
+  add(.9,mon);
+  add(.6,ljus);
+ }
+ if(L==='O'){
+  add(1,(r0,r1)=>{const s=segsOf(c,wxList(T));NOW.wx=curOf(s);ringSegs(G,s,r0,r1,{colored:true,fs:6.5,ls:1})});
+  add(1,(r0,r1)=>{const s=segsOf(c,rituList(Y));NOW.ritu=curOf(s);ringSegs(G,s,r0,r1,{colored:true,op:.13,opOn:.3,fs:6.8})});
+  if(all)add(1.35,(r0,r1)=>{const s=segsOf(c,ichList(T));NOW.ich=curOf(s);ringSegs(G,s,r0,r1,{nolab:true});const h=r1-r0;
+   s.forEach(x=>{if(x.a1-x.a0<8)return;const on=x===NOW.ich,a=(x.a0+x.a1)/2,[cx,cy]=pt(a,r0+h*.4),col=on?'#F1E6C8':'#B39A6A',W=8.4,lh=1.25,gp=.95;let g='';
+    for(let j=0;j<6;j++){const yang=x.h[5]?j<x.h[4]:j>=x.h[4],y=cy+((2.5-j)*(lh+gp));g+=yang?`<rect x="${(cx-W/2).toFixed(2)}" y="${(y-lh/2).toFixed(2)}" width="${W}" height="${lh}" fill="${col}"/>`:`<rect x="${(cx-W/2).toFixed(2)}" y="${(y-lh/2).toFixed(2)}" width="${(W*.42).toFixed(2)}" height="${lh}" fill="${col}"/><rect x="${(cx+W*.08).toFixed(2)}" y="${(y-lh/2).toFixed(2)}" width="${(W*.42).toFixed(2)}" height="${lh}" fill="${col}"/>`}
+    G.push(`<g style="pointer-events:none">${g}</g>`);G.push(tLab(a,r0+h*.84,x.h[1],Math.min(5,h*.2),on?'#F1E6C8':'#8E8676'))})});
+  if(all)add(1.1,(r0,r1)=>{const s=segsOf(c,spList(T));NOW.sp=curOf(s);NOW.spAll=s;ringSegs(G,s,r0,r1,{fs:5.2,lc:'#8E9AA6'})});
+  add(.85,mon);
+ }
+ if(L==='S'){
+  add(.8,(r0,r1)=>{const s=MHJ.map(m=>({a0:m[6]>m[7]?m[6]-360:m[6],a1:m[7],lab:m[0].toUpperCase(),col:m[5],lc:m[0]==='Väster'?'#BFB8AE':m[5],info:{t:m[0]+' · '+m[1]+' · '+m[4],s:'Medicinhjulet · efter anishinaabe-lära',x:m[2]+' · helig växt: '+m[3]}}));
+   const segs=[];s.forEach(x=>{if(x.a0<0){segs.push({...x,a0:x.a0+360,a1:360,lab:''});segs.push({...x,a0:0,lab:''})}else segs.push(x)});NOW.mhj=curOf(segs);ringSegs(G,segs,r0,r1,{colored:true,op:.32,opOn:.55,fs:6.5,ls:1.4});G.push(tLab(0,(r0+r1)/2,'NORR',Math.min(6.5,(r1-r0)*.42),NOW.mhj===segs[0]||NOW.mhj===segs[1]?'#F1E6C8':'#ECE6D6',null,1.4))});
+  add(1,(r0,r1)=>{const s=segsOf(c,gahList(Y));NOW.gah=curOf(s);ringSegs(G,s,r0,r1,{fam:'Cormorant Garamond,serif',fs:7.5,lc:'#C9B98A'})});
+  if(all)add(1.2,(r0,r1)=>{const s=segsOf(c,aztList(Y));NOW.azt=curOf(s);ringSegs(G,s,r0,r1,{fs:5.4,lc:'#C79A6A'})});
+  if(all)add(1.05,(r0,r1)=>{const s=segsOf(c,haabList(c));NOW.haab=curOf(s);ringSegs(G,s,r0,r1,{fs:6,lc:'#9FB5A0'})});
+  add(.85,mon);
+ }
+ if(L==='V'){
+  add(.85,(r0,r1)=>{const s=segsOf(c,tempList(T));NOW.temp=curOf(s);ringSegs(G,s,r0,r1,{colored:true,fs:6,ls:.8})});
+  const zl=segsOf(c,zodList(T));
+  if(all)add(1,(r0,r1)=>{const s=zl.map(z=>({...z,lab:'',info:z.kinfo}));NOW.kab=curOf(zl);ringSegs(G,s,r0,r1,{});const h=r1-r0;
+   s.forEach(z=>{if(z.a1-z.a0<8)return;const on=z.a0<=SOLNOW&&SOLNOW<z.a1,K=KAB[z.z],a=(z.a0+z.a1)/2,[x,y]=pt(a,r0+h*.4);G.push(`<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-size="${(h*.4).toFixed(2)}" fill="${on?'#F1E6C8':'#B8A57A'}" font-family="serif" style="pointer-events:none">${K[1]}</text>`);G.push(tLab(a,r0+h*.8,K[3],Math.min(5.2,h*.22),on?'#F1E6C8':'#8E8676'))})});
+  add(1.3,(r0,r1)=>{NOW.zod=curOf(zl);ringSegs(G,zl.map(z=>({...z,lab:''})),r0,r1,{});const h=r1-r0;
+   zl.forEach(z=>{if(z.a1-z.a0<8)return;const on=z===NOW.zod,Z=ZS[z.z],a=(z.a0+z.a1)/2,[x,y]=pt(a,r0+h*.33);G.push(`<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-size="${(h*.36).toFixed(2)}" fill="${on?'#E8C26A':'#9AA0AA'}" style="pointer-events:none">${Z[0]}︎</text>`);G.push(tLab(a,r0+h*.76,Z[2],Math.min(5.4,h*.2),on?'#F1E6C8':'#B39A6A','Cormorant Garamond,serif'))})});
+  if(all)add(1.1,(r0,r1)=>{const s=segsOf(c,kyrkList(Y));NOW.kyrk=curOf(s);ringSegs(G,s,r0,r1,{colored:true,op:.2,opOn:.4,lr:r0+(r1-r0)*.32,fs:5.4,lc:'#BDB6A6'});
+   const mk=[];for(const y of [Y-1,Y])steinerDates(y).forEach(([d,n])=>{const S_=STEINER.find(x=>x[0]===n);mk.push([d,n,{t:n,s:'Antroposofins fyra årstidsfester',x:S_[1]}])});markers(G,c,mk,r0,r1,'#E8C26A')});
+  add(.85,mon);
+ }
+ const tot=R_.reduce((s,x)=>s+x[0],0),gap=2.5,span=R-core-6-gap*(R_.length-1);let r=core+6;
+ R_.forEach(([w,fn])=>{const h=span*w/tot;fn(r,r+h);r+=h+gap});
+ // ditt år: veckans XP som prickar ytterst
+ const xp={};S.log.forEach(l=>{const a=ACTS[l.a];if(a)xp[l.d]=(xp[l.d]||0)+Object.values(a.e).reduce((x,y)=>x+y,0)});
+ const wk=[];for(let w=0;w<52;w++){let s=0;for(let k=1;k<=7;k++)s+=xp[iso(addD(c.base,w*7+k))]||0;wk.push(s)}
+ const wmax=Math.max(1,...wk),cw=Math.floor((Math.max(c.idx,1)-1)/7);let tand=0;
+ wk.forEach((v,w)=>{const [x,y]=pt(wheelAng(w*7+4),182);if(w<cw||(w===cw&&v)){if(v)tand++;const t=v/wmax;G.push(v?`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${(1.3+2.4*t).toFixed(2)}" fill="#E8C26A" fill-opacity="${(.3+.65*t).toFixed(2)}"/>`:`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.2" fill="#5A6470"/>`)}
+  if(w===cw)G.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3.4" fill="none" stroke="#E8C26A" stroke-width="1"/>`);else if(w>cw)G.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.1" fill="#3A424D"/>`)});
+ NOW.ar={tand,av:cw+1,xp:wk.reduce((a,b)=>a+b,0)};
+ // solkorset
+ const ST='#D6CAA6';G.push(`<g style="pointer-events:none"><circle r="${core}" fill="none" stroke="${ST}" stroke-width="4.5"/>`);
+ [0,90,180,270].forEach(a=>{const [x0,y0]=pt(a,9),[x1,y1]=pt(a,core);G.push(`<path d="M${x0.toFixed(2)} ${y0.toFixed(2)}L${x1.toFixed(2)} ${y1.toFixed(2)}" stroke="${ST}" stroke-width="4.2" stroke-linecap="round"/>`)});
+ [45,135,225,315].forEach(a=>{const [x,y]=pt(a,core*.6);G.push(`<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="4.2" fill="${ST}"/>`)});
+ G.push(`<circle r="10" fill="#07090C" stroke="${ST}" stroke-width="3.2"/></g>`);
+ HOL.forEach(([n,,,prim],i)=>{const [x,y]=pt(i*45,196);G.push(`<text x="${x.toFixed(2)}" y="${(y+4.5).toFixed(2)}" text-anchor="middle" fill="${prim?'#E8C26A':'#B8AE86'}" font-size="13" font-family="Noto Sans Runic,Segoe UI Historic,Apple Symbols,serif" style="pointer-events:none">${HRUNE[n][0]}</text>`)});
+ const [lx0,ly0]=pt(SOLNOW,core+2),[lx1,ly1]=pt(SOLNOW,R+3),[sx,sy]=pt(SOLNOW,R+6);
+ G.push(`<g style="pointer-events:none"><path d="M${lx0.toFixed(2)} ${ly0.toFixed(2)}L${lx1.toFixed(2)} ${ly1.toFixed(2)}" stroke="#E8C26A" stroke-width="1" stroke-opacity=".9"/>`);
+ for(let k=0;k<8;k++){const co=Math.cos(k*Math.PI/4),si=Math.sin(k*Math.PI/4);G.push(`<path d="M${(sx+6.5*co).toFixed(2)} ${(sy+6.5*si).toFixed(2)}L${(sx+9*co).toFixed(2)} ${(sy+9*si).toFixed(2)}" stroke="#E8C26A" stroke-width="1.1" stroke-linecap="round"/>`)}
+ G.push(`<circle cx="${sx.toFixed(2)}" cy="${sy.toFixed(2)}" r="4.6" fill="#E8C26A"/></g>`);
+ return {svg:G.join(''),NOW,T,Y}
+}
+
+function solJustNu(c,H){
+ const N=H.NOW,now=new Date(),rows=[],row=(lab,t,s)=>rows.push(`<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><p class="lbl" style="margin:0 0 2px;font-size:10px">${lab}</p><p class="serif" style="margin:0;font-size:19px;color:var(--cream)">${t}</p>${s?`<p class="muted small" style="margin:2px 0 0">${s}</p>`:''}</div>`);
+ const kvar=(d)=>{const n=Math.round((d0(d)-d0(now))/DMS);return n<=0?'i dag':n===1?'i morgon':'om '+n+' dagar'};
+ let tl='',tr='';const md=MODE(),all=md==='allt';
+ const ljusRow=()=>{const di=c.idx,dl=dagLangd(now),dly=dagLangd(addD(now,-1)),h=x=>Math.floor(x)+' h '+String(Math.round((x%1)*60)).padStart(2,'0'),diff=Math.round((dl-dly)*60),nxS=HOL.filter(x=>x[3]).map(x=>x[2]).find(x=>x>di)??365;
+  row('Ljuset',h(dl)+' dagsljus i '+loc().namn,(diff===0?'oförändrat':(diff>0?'ökar ':'minskar ')+Math.abs(diff)+' min per dygn')+' · '+(nxS-di)+' dygn till nästa solhjärta')};
+ if(md==='enkel'){ljusRow();row('Naturen nu',NATUR[now.getMonth()],'')}
+ const corner=(a,b,cc,right)=>`<div style="position:absolute;top:10px;${right?'right':'left'}:14px;text-align:${right?'right':'left'};pointer-events:none;max-width:45%">${a}<p class="serif" style="margin:0;font-size:16px;color:var(--cream);line-height:1.15">${b}</p><p class="muted" style="margin:1px 0 0;font-size:10.5px">${cc}</p></div>`;
+ if(md!=='enkel'&&solLins==='N'){const f=N.forn,s=N.sami,k=N.kelt,dag=Math.round((d0(now)-d0(f.d))/DMS)+1,len=Math.round((d0(f.end)-d0(f.d))/DMS);
+  row('Fornnordisk månad',f.lab+', '+FORNI[f.lab].split(',')[0],'dag '+dag+' av '+len+' · '+(f.half==='vetr'?'vinterhalvåret, vetr':'sommarhalvåret, sumar'));
+  row('Samisk årstid',s.lab+' · '+s.sami,s.txt);
+  if(all){const nf=[];for(const y of [now.getFullYear(),now.getFullYear()+1])KELTF.forEach(x=>nf.push([dm(y,x[0],x[1]),x[2]]));const nx=nf.filter(x=>x[0]>=d0(now)).sort((a,b)=>a[0]-b[0])[0];
+  row('Keltiskt',k.lab,'nästa eldfest: '+nx[1]+' '+kvar(nx[0]))}
+  ljusRow();
+  if(all){const doy=Math.round((d0(now)-new Date(now.getFullYear(),0,1))/DMS),md2=MARKD.map(([m,d,n])=>[dm(now.getFullYear(),m,d),n]).concat(MARKD.map(([m,d,n])=>[dm(now.getFullYear()+1,m,d),n])).filter(x=>x[0]>=d0(now))[0];
+  row('Runstaven','Dagens runa <span class="rune" style="color:var(--gold)">'+STAV[doy%7]+'</span>','nästa märkesdag: '+md2[1]+' '+kvar(md2[0]))}
+  row('Naturen nu',NATUR[now.getMonth()],'');
+  tl=corner(`<p class="lbl" style="margin:0;font-size:10px;color:#B7C3CF">${s.sami.toUpperCase()}</p>`,s.lab,s.txt.split(',')[0]);
+  const hf=f.half==='vetr';tr=corner(`<p class="lbl" style="margin:0;font-size:10px">${hf?'VETR':'SUMAR'}</p>`,hf?'Vinterhalvåret':'Sommarhalvåret','fornnordiska halvåret',1);
+ }
+ if(md!=='enkel'&&solLins==='O'){const w=N.wx,r=N.ritu,i=N.ich,sp=N.sp,spa=N.spAll||[],nx=sp?spa[spa.indexOf(sp)+1]:null,ka=kinAr(now);
+  row('De fem faserna',w.info.t,w.info.x);
+  row('Ayurveda',r.info.t,r.info.x+' · '+r.info.s.split(' · ')[1]);
+  if(all){row('I Ching',i.h[2]+' '+i.h[3],i.h[6]);
+  row('Solperiod',SP24[sp.k][1]+(nx?' → '+SP24[nx.k][1]:''),nx?'nästa '+kvar(nx.d):'');
+  tl=corner(`<p style="margin:0;font-size:20px;color:var(--gold);font-family:'Noto Serif CJK TC',serif">${SP24[sp.k][0]}</p>`,SP24[sp.k][1],'solperiod')}
+  else tl=corner(`<p class="lbl" style="margin:0;font-size:10px">DE FEM FASERNA</p>`,WX[w.w][0],WX[w.w][1]);
+  tr=corner(`<p style="margin:0;font-size:22px;color:var(--gold);font-family:'Noto Serif CJK TC',serif">${ka.ch}</p>`,ka.namn,ka.yy+' · sedan '+ka.fran.getDate()+'/'+(ka.fran.getMonth()+1),1);
+ }
+ if(md!=='enkel'&&solLins==='S'){const m=N.mhj,g=N.gah,a=N.azt,my=mayaDag(now);
+  row('Medicinhjulet',m.info.t,m.info.x);
+  row('Persien',g.info.t,g.info.x);
+  if(all){row('Aztekerna',a.info.t,a.info.x);
+  row('Maya · Haab’',(my.hd)+' '+HAAB[my.hm][0],HAAB[my.hm][1]);
+  row('Maya · Tzolk’in',my.tn+' '+TZK[my.ts][0],TZK[my.ts][1]+' · den heliga cykeln på 260 dagar');
+  tl=corner(`<p class="lbl" style="margin:0;font-size:10px">TZOLK’IN</p>`,my.tn+' '+TZK[my.ts][0],TZK[my.ts][1]);
+  tr=corner(`<p class="lbl" style="margin:0;font-size:10px">HAAB’</p>`,my.hd+' '+HAAB[my.hm][0],HAAB[my.hm][1]||'Mayas solår',1)}
+ }
+ if(md!=='enkel'&&solLins==='V'){const t=N.temp,k=N.kab,z=N.zod,ky=N.kyrk,sv=sjalVecka(now);
+  row('Elementen och temperamenten',t.info.t,t.info.x);
+  if(all)row('Kabbalan',k.kinfo.t,k.kinfo.s.split(' · ').slice(2).join(' · '));
+  row('Zodiaken och alkemin',z.info.t,z.info.x);
+  if(all)row('Kyrkoåret',ky.info.t,ky.info.s.split(' · ')[1]+' · '+ky.info.x);
+  row('Själens kalender','Vers '+sv.w+' · spegelvers '+sv.spegel,'Rudolf Steiners 52 veckoverser, räknade från påsk');
+  tl=all?corner(`<p class="lbl" style="margin:0;font-size:10px">KYRKOÅRET</p>`,ky.lab,ky.info.s.split(' · ')[1]):corner(`<p class="lbl" style="margin:0;font-size:10px">TEMPERAMENTET</p>`,TEMPN(t),t.info.x.split(' · ')[0]);
+  tr=corner(`<p class="lbl" style="margin:0;font-size:10px">SJÄLENS KALENDER</p>`,'Vers '+sv.w,'spegelvers '+sv.spegel,1);
+ }
+ const ar=N.ar;row('Ditt år',ar.tand+' av '+ar.av+' veckor tända',ar.xp+' XP sedan solhvarvet');
+ return {rows:rows.join(''),tl,tr}
+}
+
+const TEMPN=t=>t.info.t.split(' · ')[1].replace(/^./,x=>x.toUpperCase());
 function sol(){
- const c=cal(new Date()), cur=c.idx;
- const P=(deg,r)=>{const a=(deg-90)*Math.PI/180;return [r*Math.cos(a),r*Math.sin(a)]}, f=v=>v.toFixed(1);
- const STONE='#D6CAA6';
- let g='';
- // månadernas band med innevarande månad
- if(c.mo>=0){const a0=wheelAng(1+c.mo*28),a1=wheelAng(1+c.mo*28+28),pts=[];for(let t=0;t<=20;t++)pts.push(P(a0+(a1-a0)*t/20,114));for(let t=20;t>=0;t--)pts.push(P(a0+(a1-a0)*t/20,98));
-  g+=`<path d="M${pts.map(q=>f(q[0])+' '+f(q[1])).join('L')}z" fill="rgba(232,194,106,.16)"/>`}
- for(let m=0;m<13;m++){const d=wheelAng(1+m*28),[x1,y1]=P(d,98),[x2,y2]=P(d,114);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="#2A3340"/>`;
-  const [tx,ty]=P(wheelAng(1+m*28+14),106);g+=`<text x="${f(tx)}" y="${f(ty+2.5)}" text-anchor="middle" fill="${m===c.mo?'#E8C26A':'#7C8794'}" font-size="7" font-family="Jost,sans-serif">${MON[m]}</text>`}
- // yttre varvet av prickar, en för varje vecka, som på hällristningen
- for(let i=0;i<365;i+=7){const [x,y]=P(wheelAng(i),122);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="1.3" fill="#5A6470"/>`}
- // det huggna solkorset
- g+=`<circle r="88" fill="none" stroke="${STONE}" stroke-width="7" stroke-linecap="round"/>`;
- [0,90,180,270].forEach(d=>{const [x1,y1]=P(d,13),[x2,y2]=P(d,88);g+=`<path d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}" stroke="${STONE}" stroke-width="6.5" stroke-linecap="round"/>`});
- g+=`<circle r="12" fill="#07090C" stroke="${STONE}" stroke-width="5"/>`;
- // portarna som prickar i kvadranterna
- [45,135,225,315].forEach(d=>{const [x,y]=P(d,50);g+=`<circle cx="${f(x)}" cy="${f(y)}" r="7" fill="${STONE}"/>`});
- // noderna: högtiderna på ringen och deras runor utanför
- HOL.forEach(([n,,,prim],i)=>{const d=i*45,[x,y]=P(d,88),[rx,ry]=P(d,138);
-  if(prim) g+=`<circle cx="${f(x)}" cy="${f(y)}" r="9" fill="#07090C" stroke="#E8C26A" stroke-width="1.6"/><path d="M${f(x-5.5)} ${f(y)}h11M${f(x)} ${f(y-5.5)}v11" stroke="#E8C26A" stroke-width="1.4"/>`;
-  else g+=`<path d="M${f(x)} ${f(y-7)}L${f(x+6)} ${f(y)}L${f(x)} ${f(y+7)}L${f(x-6)} ${f(y)}z" fill="#07090C" stroke="#D9C98A" stroke-width="1.3"/>`;
-  g+=`<text x="${f(rx)}" y="${f(ry+5)}" text-anchor="middle" fill="${prim?'#E8C26A':'#B8AE86'}" font-size="15" font-family="Noto Sans Runic,Segoe UI Historic,Apple Symbols,serif">${HRUNE[n][0]}</text>`});
- // solen: var vi står just nu
- const sd=wheelAng(cur),[sx,sy]=P(sd,122);
- for(let k=0;k<8;k++){const [r1x,r1y]=[sx+8*Math.cos(k*Math.PI/4),sy+8*Math.sin(k*Math.PI/4)],[r2x,r2y]=[sx+11*Math.cos(k*Math.PI/4),sy+11*Math.sin(k*Math.PI/4)];g+=`<path d="M${f(r1x)} ${f(r1y)}L${f(r2x)} ${f(r2y)}" stroke="#E8C26A" stroke-width="1.2" stroke-linecap="round"/>`}
- g+=`<circle cx="${f(sx)}" cy="${f(sy)}" r="6" fill="#E8C26A"/>`;
- const left=h=>{let d=h-cur;if(d<0)d+=365;return d};
+ const c=cal(new Date()),H=solHjul(c),J=solJustNu(c,H),enk=MODE()==='enkel',hasC=!!(J.tl||J.tr);
+ const left=h=>{let d=h-c.idx;if(d<0)d+=365;return d};
  const next=HOL.slice().sort((a,b)=>left(a[2])-left(b[2]));
- const mi=c.mo>=0?MINFO[c.mo]:null;
- return `<div class="head"><div><p class="lbl" style="color:var(--luft)">Luft</p><h1>Solen</h1><p class="muted small" style="margin:4px 0 0">Årshjulet: tretton månader, fyra hjärtan och fyra portar</p></div>${back('luft')}</div>
- <div class="p"><svg width="100%" height="350" viewBox="-160 -160 320 320" role="img" aria-label="Årshjulet som huggen solkorsring med solens plats i dag">${g}</svg><p class="serif" style="text-align:center;margin:0;font-size:20px;color:var(--cream)">${c.txt}</p><p class="muted small" style="text-align:center;margin:2px 0 0">Korsets armar pekar på solstånden och dagjämningarna, prickarna på portarna. <span style="color:#E8C26A">⊕</span> hjärtan · <span style="color:#D9C98A">◇</span> portar · runorna är högtidernas</p></div>
+ const mi=c.mo>=0?MINFO[c.mo]:null, sel=selASeg!=null&&ASEG[selASeg]?ASEG[selASeg]:null;
+ const lins=Object.keys(LINS).map(k=>{const on=k===solLins,[n,s,r]=LINS[k];return `<button data-lins="${k}" style="flex:1;min-width:0;padding:8px 2px;border-radius:12px;border:1px solid ${on?'#8A7240':'var(--line)'};background:${on?'#211C12':'none'};color:inherit;cursor:pointer"><span class="rune" style="display:block;font-size:17px;color:${on?'var(--gold)':'#6E7884'}">${r}</span><span style="display:block;font-size:10px;letter-spacing:.12em;color:${on?'var(--gold)':'var(--muted)'}">${n.toUpperCase()}</span><span class="serif" style="display:block;font-size:13px;color:${on?'var(--cream)':'#5E6875'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s}</span></button>`}).join('');
+ return `<div class="head"><div><p class="lbl" style="color:var(--luft)">Luft</p><h1>Solen</h1><p class="muted small" style="margin:4px 0 0">${enk?'Årshjulet':MODE()==='allt'?'Årshjulet · fyra väderstreck, fyra traditioner i varje':'Årshjulet · fyra väderstreck'}</p></div>${back('luft')}</div>
+ <div class="p" style="position:relative;padding-top:${hasC?64:12}px">${J.tl}${J.tr}<svg width="100%" viewBox="-207 -207 414 414" role="img" aria-label="Årshjulet" style="display:block">${H.svg}</svg>
+ <p class="serif" style="text-align:center;margin:4px 0 0;font-size:20px;color:var(--cream)">${c.txt}</p><p class="muted small" style="text-align:center;margin:2px 0 12px">Tryck på en ring för att läsa mer</p>
+ ${sel?`<div style="border:1px solid #4A4130;border-radius:12px;padding:10px 12px;margin-bottom:12px"><div class="row"><p class="lbl" style="margin:0;font-size:10px">${sel.s||''}</p><button class="btn" data-aseg="${selASeg}" aria-label="Stäng" style="min-height:28px;padding:0 10px">✕</button></div><p class="serif" style="margin:2px 0 0;font-size:20px;color:var(--cream)">${sel.t}</p>${sel.x?`<p class="small" style="margin:4px 0 0">${sel.x}</p>`:''}</div>`:''}
+ ${enk?'':`<div style="display:flex;gap:6px">${lins}</div>`}</div>
+ <div class="p"><p class="lbl">${enk?'Just nu i året':'Just nu · '+LINS[solLins][1]}</p>${J.rows}</div>
  ${mi?`<div class="p"><p class="lbl">Månaden</p><p class="serif" style="margin:0;font-size:26px;color:var(--cream)">${MON[c.mo]}</p><p class="muted small" style="margin:2px 0 0">${mi[0]} · förmåga: ${mi[1]} · dag ${c.day} av 28, ${28-c.day} kvar</p></div>`:''}
  ${selHol&&HOLINFO[selHol]?holDetail(selHol):''}<div class="p"><p class="lbl">Högtiderna · tryck för mer</p>${next.map(([n,roll,i,prim])=>`<button data-hol="${n}" class="row" style="width:100%;background:none;border:none;border-bottom:1px solid var(--line2);padding:0;text-align:left;min-height:46px"><span><span style="color:${prim?'#E8C26A':'#D9C98A'};margin-right:6px">${prim?'⊕':'◇'}</span><span class="rune" style="font-size:18px;color:var(--gold);margin-right:6px">${HRUNE[n][0]}</span><span class="serif" style="font-size:18px;color:var(--cream)">${n}</span> <span class="muted small">${roll}</span></span><span class="muted small" style="white-space:nowrap">${left(i)===0?'i dag':'om '+left(i)+' d'}</span></button>`).join('')}</div>`;
 }
+
+// Engelska för årshjulet
+Object.assign(EN,{
+'Årshjulet':'The wheel of the year','Årshjulet · fyra väderstreck':'The wheel of the year · four directions','Årshjulet · fyra väderstreck, fyra traditioner i varje':'The wheel of the year · four directions, four traditions in each',
+'Tryck på en ring för att läsa mer':'Tap a ring to read more','Just nu i året':'Right now in the year','Ljuset':'The light','Naturen nu':'Nature now','Ditt år':'Your year','oförändrat':'unchanged',
+'Norr':'North','Öster':'East','Söder':'South','Väster':'West','NORR':'NORTH','ÖSTER':'EAST','SÖDER':'SOUTH','VÄSTER':'WEST','Norden':'The North','Österlandet':'The East','Ursprunget':'The Origin','Västerlandet':'The West',
+'Domherrar och talgoxar vid fågelbordet, älgen fäller sina horn':'Bullfinches and great tits at the bird table, the elk sheds its antlers',
+'Korpen häckar först av alla, ugglorna ropar i natten':'The raven nests first of all, the owls call in the night',
+'Sånglärkan och tofsvipan kommer, hasselns hängen blommar':'The skylark and the lapwing arrive, the hazel catkins bloom',
+'Tranorna dansar, blåsippor och vitsippor, grodorna leker':'The cranes dance, hepaticas and wood anemones, the frogs spawn',
+'Göken gal, björken slår ut, gäddan har lekt':'The cuckoo calls, the birch leafs out, the pike has spawned',
+'Midnattsljus, ängsblommor, fågelungarna flyger ut':'Midnight light, meadow flowers, the fledglings fly',
+'Smultron och blåbär, åskan och slåttern':'Wild strawberries and blueberries, thunder and haymaking',
+'Lingon och svamp, flyttfåglarna samlas':'Lingonberries and mushrooms, the migrating birds gather',
+'Tranor och gäss drar söderut, älgbrunsten, löven gulnar':'Cranes and geese head south, the elk rut, the leaves turn yellow',
+'Löven faller, de första frostnätterna, björnen söker ide':'The leaves fall, the first frosty nights, the bear seeks its den',
+'Björnen sover, fjällharen och hermelinen blir vita, sjöarna lägger sig':'The bear sleeps, the mountain hare and the stoat turn white, the lakes freeze over',
+'Mörkertiden, rimfrost, sidensvansar i rönnarna':'The dark time, hoarfrost, waxwings in the rowans',
+// Norr
+'Fornnordisk månad':'Old Norse month','vinterhalvåret':'the winter half','sommarhalvåret':'the summer half','vinterhalvåret, vetr':'the winter half, vetr','sommarhalvåret, sumar':'the summer half, sumar',
+'Vinterhalvåret':'The winter half','Sommarhalvåret':'The summer half','fornnordiska halvåret':'the Old Norse half-year',
+'slaktmånaden, vinterns första':'the slaughter month, the first of winter','slaktmånaden':'the slaughter month','julmånaden':'the Yule month','märgsugaren, den magra tiden':'the marrow-sucker, the lean time','märgsugaren':'the marrow-sucker',
+'den stränga vintern, midvinterns fest':'the harsh winter, the midwinter feast','den stränga vintern':'the harsh winter','Torres dotter, senvintern':'Thorri’s daughter, late winter','Torres dotter':'Thorri’s daughter',
+'den ensamma månaden, vinterns sista':'the lone month, the last of winter','den ensamma månaden':'the lone month','den första sommarmånaden':'the first summer month','försommaren':'early summer','solmånaden':'the sun month',
+'de fyra extranätterna mitt i sommaren':'the four extra nights in midsummer','höskörden':'the hay harvest','två månader kvar till vintern':'two months left until winter','höstmånaden':'the autumn month',
+'Samisk årstid':'Sámi season','Vinter':'Winter','Vårvinter':'Spring-winter','Vår':'Spring','Vårsommar':'Spring-summer','Sommar':'Summer','Höstsommar':'Autumn-summer','Höst':'Autumn','Höstvinter':'Autumn-winter',
+'vila på vinterbetet i mörkret':'rest on the winter pasture in the dark','ljuset återvänder, skaren bär och flytten mot kalvningslandet börjar':'the light returns, the snow crust bears and the trek to the calving land begins','ljuset återvänder':'the light returns',
+'kalvningen':'the calving','grönskan och midnattssolen':'the greening and the midnight sun','kalvmärkning uppe på fjället':'calf marking up on the fell','bär, svamp och de första kalla nätterna':'berries, mushrooms and the first cold nights','brunsten':'the rut','första snön och flytten mot vinterlandet':'the first snow and the trek to the winter land',
+'Keltiskt':'Celtic','Keltiska eldfester':'Celtic fire festivals','Mörka halvan':'The dark half','Ljusa halvan':'The light half','Keltiskt · från Samhain till Beltane':'Celtic · from Samhain to Beltane','Keltiskt · från Beltane till Samhain':'Celtic · from Beltane to Samhain',
+'vila, förfäder, berättelser och det inre':'rest, ancestors, stories and the inner life','växt, bete, arbete och det yttre':'growth, grazing, work and the outer life',
+'sommarens slut och det nya året; slöjan till de döda är tunn':'summer’s end and the new year; the veil to the dead is thin','Brigids fest: mjölken och ljuset återvänder':'Brigid’s feast: the milk and the light return','Bels eld: boskapen drivs mellan två eldar ut på bete':'Bel’s fire: the cattle are driven between two fires out to pasture','Lughs fest: den första skörden':'Lugh’s feast: the first harvest',
+'Runstaven':'The rune staff',
+'Trettondagen':'Epiphany','Tjugondag Knut':'St Knut’s Day','Pålsmäss':'St Paul’s Day','Kyndelsmäss':'Candlemas','Gregorius':'St Gregory','Vårfrudagen':'Lady Day','Tiburtius, sommarens första dag':'St Tiburtius, the first day of summer','Valborg':'Walpurgis','Midsommar, Johannes':'Midsummer, St John','Jakob':'St James','Larsmäss':'St Lawrence','Bartolomeus':'St Bartholomew','Mikael':'Michaelmas','Vinternatt':'Winter Night','Simon och Judas':'Simon and Jude','Helgonmäss':'All Saints','Mårten':'Martinmas','Klemet':'St Clement','Katarina':'St Catherine','Anders':'St Andrew','Tomas':'St Thomas','Staffan':'St Stephen',
+// Öster
+'De fem faserna':'The five phases','DE FEM FASERNA':'THE FIVE PHASES','VATTEN':'WATER','TRÄ':'WOOD','ELD':'FIRE','JORD':'EARTH','METALL':'METAL','LUFT':'AIR','Trä':'Wood','Metall':'Metal',
+'njurar och urinblåsa':'kidneys and bladder','lever och gallblåsa':'liver and gallbladder','hjärta och tunntarm':'heart and small intestine','mjälte och mage':'spleen and stomach','lungor och tjocktarm':'lungs and large intestine',
+'känsla: rädsla och vilja':'emotion: fear and will','känsla: ilska och växtkraft':'emotion: anger and growth','känsla: glädje':'emotion: joy','känsla: omsorg och grubbel':'emotion: care and worry','känsla: sorg och släppande':'emotion: grief and letting go',
+'färg: svart':'colour: black','färg: grönt':'colour: green','färg: rött':'colour: red','färg: gult':'colour: yellow','färg: vitt':'colour: white','färg: violett':'colour: violet',
+'smak: salt':'taste: salty','smak: surt':'taste: sour','smak: bittert':'taste: bitter','smak: sött':'taste: sweet','smak: starkt':'taste: pungent',
+'senvintern':'late winter','våren':'spring','sommarhettan':'the summer heat','regntiden':'the rains','hösten':'autumn','förvintern':'early winter',
+'kapha samlas':'kapha accumulates','kapha blossar upp':'kapha flares up','vata samlas, kapha lugnar sig':'vata accumulates, kapha calms','vata blossar upp, pitta samlas':'vata flares up, pitta accumulates','pitta blossar upp, vata lugnar sig':'pitta flares up, vata calms','pitta lugnar sig, kroppen är som starkast':'pitta calms, the body is at its strongest',
+'solens norrgång, kraften tas':'the sun’s northward course, strength is drawn','solens sydgång, kraften ges':'the sun’s southward course, strength is given',
+'I Ching · årets tolv hexagram':'I Ching · the twelve hexagrams of the year',
+'Återkomsten':'The Return','Närmandet':'The Approach','Freden':'Peace','Den stora kraften':'The Great Power','Genombrottet':'The Breakthrough','Det skapande':'The Creative','Mötet':'Coming to Meet','Tillbakadragandet':'The Retreat','Stillaståendet':'Standstill','Betraktandet':'Contemplation','Söndervittringen':'Splitting Apart','Det mottagande':'The Receptive',
+'ljuset vänder: ett yang föds under fem yin':'the light turns: one yang is born beneath five yin','ljuset närmar sig och växer':'the light approaches and grows','himmel och jord i jämvikt':'heaven and earth in balance','yang tar övertaget':'yang gains the upper hand','bara ett yin kvar överst':'only one yin left at the top','sex yang: ljuset på sin höjd':'six yang: the light at its height','det första yin föds under fem yang':'the first yin is born beneath five yang','mörkret växer, dra dig tillbaka i tid':'the dark grows, withdraw in time','himmel och jord går isär':'heaven and earth drift apart','yin tar övertaget, se och begrunda':'yin gains the upper hand, look and reflect','bara ett yang kvar överst':'only one yang left at the top','sex yin: mörkret på sin höjd före vändningen':'six yin: the dark at its height before the turn',
+'De 24 solperioderna':'The 24 solar terms','Solperiod':'Solar term','solperiod':'solar term',
+'Vårdagjämning':'Spring equinox','Dagjämning':'Equinox','Klart ljus':'Clear Brightness','Sädesregn':'Grain Rain','Sommarstart':'Start of Summer','Små ax':'Grain Buds','Axsådd':'Grain in Ear','Sommarsolstånd':'Summer solstice','Solstånd':'Solstice','Lite hetta':'Minor Heat','Stor hetta':'Major Heat','Höststart':'Start of Autumn','Hettan går':'End of Heat','Vit dagg':'White Dew','Höstdagjämning':'Autumn equinox','Kall dagg':'Cold Dew','Frostfall':'Frost Descent','Vinterstart':'Start of Winter','Lite snö':'Minor Snow','Stor snö':'Major Snow','Vintersolstånd':'Winter solstice','Lite kyla':'Minor Cold','Stor kyla':'Major Cold','Vårstart':'Start of Spring','Regnvatten':'Rain Water','Insekterna vaknar':'Awakening of Insects','Uppvaknande':'Awakening',
+'yang-eld':'yang fire','yin-eld':'yin fire','yang-trä':'yang wood','yin-trä':'yin wood','yang-jord':'yang earth','yin-jord':'yin earth','yang-metall':'yang metal','yin-metall':'yin metal','yang-vatten':'yang water','yin-vatten':'yin water',
+// Söder
+'Medicinhjulet':'The medicine wheel','Medicinhjulet · efter anishinaabe-lära':'The medicine wheel · after Anishinaabe teaching','vinter':'winter','vår':'spring','sommar':'summer','höst':'autumn','vit':'white','gul':'yellow','röd':'red','svart':'black',
+'de äldre och visdomen':'the elders and wisdom','födelsen och gryningen':'birth and dawn','ungdomen och växandet':'youth and growing','vuxenlivet och insikten':'adulthood and insight',
+'helig växt: sötgräs':'sacred plant: sweetgrass','helig växt: tobak':'sacred plant: tobacco','helig växt: ceder':'sacred plant: cedar','helig växt: salvia':'sacred plant: sage',
+'Persien':'Persia','Persien · de sex skapelsefesterna':'Persia · the six feasts of creation','Himlen':'The sky','Vattnet':'The water','Jorden':'The earth','Växterna':'The plants','Djuren':'The animals','Människan':'Humankind',
+'Aztekerna':'The Aztecs','Aztekernas årsfester · enligt Sahagún':'The Aztec festivals of the year · after Sahagún',
+'vattnet hålls tillbaka':'the waters are held back','jorden byter hud':'the earth sheds its skin','den lilla vakan':'the little vigil','den stora vakan':'the great vigil','torkan':'the drought','bönmåltiden':'the bean meal','herrarnas lilla fest':'the lords’ little feast','herrarnas stora fest':'the lords’ great feast','blommorna ges':'the flowers are given','frukten faller':'the fruit falls','sopandet':'the sweeping','gudarna kommer':'the gods arrive','bergens fest':'the feast of the mountains','den dyrbara fjädern':'the precious feather','fanorna höjs':'the banners are raised','vattnet stiger ner':'the water descends','sträckandet':'the stretching','återväxten':'the regrowth','de fem tomma dagarna':'the five empty days',
+'Tlaloc och regnet':'Tlaloc and the rain','Xipe Totec, förnyelsen':'Xipe Totec, renewal','Coatlicue, jorden':'Coatlicue, the earth','Centeotl, majsen':'Centeotl, the maize','Tezcatlipoca, den rökande spegeln':'Tezcatlipoca, the smoking mirror','Tlaloc, regnet':'Tlaloc, the rain','Huixtocihuatl, saltet':'Huixtocihuatl, the salt','Xilonen, den unga majsen':'Xilonen, the young maize','Huitzilopochtli, solen':'Huitzilopochtli, the sun','Xiuhtecuhtli, elden':'Xiuhtecuhtli, the fire','Toci, gudarnas moder':'Toci, mother of the gods','alla gudarnas återkomst':'the return of all the gods','bergen och regnet':'the mountains and the rain','Mixcoatl, jakten':'Mixcoatl, the hunt','Ilamatecuhtli, den gamla modern':'Ilamatecuhtli, the old mother','vila och väntan':'rest and waiting',
+'Maya · Haab’':'Maya · Haab’','Maya · Tzolk’in':'Maya · Tzolk’in','Maya · solåret Haab’':'Maya · the solar year Haab’','Mayas solår':'the Maya solar year','en av de arton månaderna på tjugo dagar':'one of the eighteen months of twenty days','den heliga cykeln på 260 dagar':'the sacred cycle of 260 days',
+'mattan, härskarens säte':'the mat, seat of the ruler','fladdermusen':'the bat','hunden':'the dog','den nya solen':'the new sun','samlandet':'the gathering','grottan och brunnen':'the cave and the well','det gröna och nya':'the green and new','det vita':'the white','hjorten, det röda':'the deer, the red','inneslutningen':'the enclosure','den gula solen':'the yellow sun','ugglan':'the owl','trumman':'the drum','sköldpaddan':'the turtle','de fem namnlösa dagarna':'the five nameless days',
+'krokodilen, urvattnet':'the crocodile, the primal water','vinden och anden':'the wind and the spirit','natten och mörkret':'night and darkness','majsen och fröet':'the maize and the seed','ormen':'the serpent','döden och förvandlingen':'death and transformation','hjorten':'the deer','stjärnan, Venus':'the star, Venus','vattnet':'the water','apan, skaparen':'the monkey, the maker','vägen':'the road','vassen och säden':'the reed and the grain','jaguaren':'the jaguar','örnen':'the eagle','gamen och visdomen':'the vulture and wisdom','jorden':'the earth','flintan':'the flint','stormen':'the storm','solen och herren':'the sun and the lord',
+// Väster
+'Elementen och temperamenten':'The elements and the temperaments','Elementen och de fyra temperamenten':'The elements and the four temperaments','TEMPERAMENTET':'THE TEMPERAMENT',
+'sangvinisk':'sanguine','kolerisk':'choleric','melankolisk':'melancholic','flegmatisk':'phlegmatic','Sangvinisk':'Sanguine','Kolerisk':'Choleric','Melankolisk':'Melancholic','Flegmatisk':'Phlegmatic',
+'varmt och fuktigt':'warm and moist','varmt och torrt':'warm and dry','kallt och torrt':'cold and dry','kallt och fuktigt':'cold and moist',
+'vätskan: blodet':'humour: blood','vätskan: den gula gallan':'humour: yellow bile','vätskan: den svarta gallan':'humour: black bile','vätskan: slemmet':'humour: phlegm',
+'Kabbalan':'The Kabbalah','Kabbalan · Sefer Yetzirah':'The Kabbalah · Sefer Yetzirah',
+'talet':'speech','tanken':'thought','gången':'walking','synen':'sight','hörseln':'hearing','handlingen':'action','föreningen':'union','lukten':'smell','sömnen':'sleep','vreden':'anger','smaken':'taste','skrattet':'laughter',
+'Zodiaken och alkemin':'The zodiac and alchemy','Zodiaken och alkemins tolv operationer':'The zodiac and the twelve operations of alchemy',
+'Kalcinering':'Calcination','Koagulering':'Congelation','Fixering':'Fixation','Upplösning':'Dissolution','Digerering':'Digestion','Destillation':'Distillation','Sublimering':'Sublimation','Separation':'Separation','Cerering':'Ceration','Jäsning':'Fermentation','Förökning':'Multiplication','Projektion':'Projection',
+'att bränna till aska: det gamla prövas i eld':'burning to ash: the old is tried in fire','det lösta stelnar till form':'the dissolved sets into form','det flyktiga görs fast':'the volatile is made fixed','det stela löses i vatten':'the rigid dissolves in water','långsam mognad i värme':'slow ripening in warmth','det rena stiger och fångas':'the pure rises and is caught','det fasta blir ande':'the solid becomes spirit','det fina skiljs från det grova':'the subtle is parted from the gross','materien mjukas som vax':'matter softens like wax','nytt liv ur förruttnelsen':'new life out of putrefaction','stenens kraft mångfaldigas':'the power of the stone is multiplied','stenen kastas på metallen och förvandlar den':'the stone is cast upon the metal and transforms it',
+'Kyrkoåret':'The church year','KYRKOÅRET':'THE CHURCH YEAR','Advent':'Advent','Julen':'Christmas','Trettondagstiden':'Epiphanytide','Fastan':'Lent','Påsktiden':'Eastertide','Pingst':'Pentecost','Trefaldighetstiden':'Trinitytide',
+'väntan och förberedelse':'waiting and preparation','ljusets födelse':'the birth of the light','ljuset sprids':'the light spreads','rening och försakelse':'cleansing and renunciation','uppståndelsen':'the resurrection','andens eld':'the fire of the spirit','växandet, livet i vardagen':'growing, life in the everyday',
+'Antroposofins fyra årstidsfester':'The four seasonal festivals of anthroposophy','Påsk':'Easter','Johannes':'St John’s','uppståndelsen: livet segrar över döden':'the resurrection: life overcomes death','själen andas ut i sommarens ljus':'the soul breathes out into the summer light','modet och viljan när naturen dör':'courage and will as nature dies','ljusets födelse i mörkret':'the birth of the light in the dark',
+'Själens kalender':'The Calendar of the Soul','SJÄLENS KALENDER':'THE CALENDAR OF THE SOUL','Rudolf Steiners 52 veckoverser, räknade från påsk':'Rudolf Steiner’s 52 weekly verses, counted from Easter',
+'LifOS-månad':'LifOS month'
+});
+EN_RE.unshift(
+ [/^(\d+) h (\d+) dagsljus i (.+)$/,'$1 h $2 of daylight in $3'],
+ [/^ökar (\d+) min per dygn$/,'grows $1 min a day'],[/^minskar (\d+) min per dygn$/,'shrinks $1 min a day'],
+ [/^(\d+) dygn till nästa solhjärta$/,'$1 days to the next solar heart'],
+ [/^(\d+) av (\d+) veckor tända$/,'$1 of $2 weeks lit'],[/^(\d+) XP sedan solhvarvet$/,'$1 XP since the solstice'],
+ [/^dag (\d+) av (\d+)$/,'day $1 of $2'],[/^Vers (\d+)$/,'Verse $1'],[/^spegelvers (\d+)$/,'mirror verse $1'],
+ [/^nästa eldfest: (.+) om (\d+) dagar$/,'next fire festival: $1 in $2 days'],[/^nästa eldfest: (.+) i morgon$/,'next fire festival: $1 tomorrow'],[/^nästa eldfest: (.+) i dag$/,'next fire festival: $1 today'],
+ [/^nästa märkesdag: (.+) om (\d+) dagar$/,(m,a,b)=>'next marker day: '+trs(a)+' in '+b+' days'],[/^nästa märkesdag: (.+) i morgon$/,(m,a)=>'next marker day: '+trs(a)+' tomorrow'],[/^nästa märkesdag: (.+) i dag$/,(m,a)=>'next marker day: '+trs(a)+' today'],
+ [/^nästa om (\d+) dagar$/,'next in $1 days'],[/^nästa i morgon$/,'next tomorrow'],[/^nästa i dag$/,'next today'],
+ [/^solen står på (\d+)° längs ekliptikan$/,'the sun stands at $1° along the ecliptic'],
+ [/^månadens bokstav och den förmåga den styr: (.+)$/,(m,a)=>'the month’s letter and the faculty it rules: '+trs(a)],
+ [/^tiden efter festen för (\S+)s skapelse$/,(m,a)=>'the time after the feast of the creation of '+trs(a)],
+ [/^(\S+), ungefär$/,'$1, approximately'],[/^sedan (\d+)\/(\d+)$/,'since $1/$2'],
+ [/^(Trä|Eld|Jord|Metall|Vatten)(råttans|oxens|tigerns|harens|drakens|ormens|hästens|getens|apans|tuppens|hundens|grisens) år$/,(m,a,b)=>'Year of the '+{Trä:'Wood',Eld:'Fire',Jord:'Earth',Metall:'Metal',Vatten:'Water'}[a]+' '+{råttans:'Rat',oxens:'Ox',tigerns:'Tiger',harens:'Rabbit',drakens:'Dragon',ormens:'Snake',hästens:'Horse',getens:'Goat',apans:'Monkey',tuppens:'Rooster',hundens:'Dog',grisens:'Pig'}[b]],
+ [/^(.+) dagsljus$/,(m,a)=>a+' of daylight']
+);
+
 // ---------- Himlen: verklig måne, Thuns stjärnbildsdagar ----------
 const SYN=29.530588853;
 function jd(date){return date.getTime()/864e5+2440587.5}
@@ -1576,6 +1865,8 @@ document.addEventListener('click',e=>{
  if(q('[data-manevy]')){maneVy=q('[data-manevy]').dataset.manevy;render();return}
  if(q('[data-skaldag]')){const i=+q('[data-skaldag]').dataset.skaldag;maneDag=maneDag===i?null:i;render();return}
  if(q('[data-skalmo]')){navMo=+q('[data-skalmo]').dataset.skalmo;maneDag=null;maneVy='rutor';maneZoom=true;render();maneZoom=false;window.scrollTo(0,0);return}
+ if(q('[data-lins]')){solLins=q('[data-lins]').dataset.lins;selASeg=null;render();return}
+ if(q('[data-aseg]')){const i=+q('[data-aseg]').dataset.aseg;selASeg=selASeg===i?null:i;render();return}
  if(q('[data-mode]')){S.mode=q('[data-mode]').dataset.mode;save();render();return}
  if(q('[data-lang]')){S.lang=q('[data-lang]').dataset.lang;save();render();return}
  if(view==='smedjan'){
