@@ -613,9 +613,9 @@ function veckan(){
 }
 // ---------- Triangeln: 3 delar, 9 aspekter, 27 fundament, 81 kvaliteter ----------
 const TRI_RAW=[
- ['Kropp','+',[['Styrka','+',[['Kraft',['explosivitet','hållstyrka','maxstyrka']],['Uthållighet',['kondition','återhämtningsförmåga','seghet']],['Kroppskontroll',['koordination','kroppskännedom','balans']]]],
-   ['Flexibilitet','−',[['Aktiv rörlighet',['styrka i ytterläge','ledrörlighet','fullt rörelseomfång']],['Stretch',['dynamisk stretch','passiv stretch','avspänning']],['Smidighet',['rytm','följsamhet','flöde']]]],
-   ['Livskraft','⊙',[['Näring',['kost','matsmältning','fasta']],['Vila',['vila i rörelse','sömn','dygnsrytm']],['Andning',['utandning','inandning','andetagets rytm']]]]]],
+ ['Kropp','+',[['Styrka','+',[['Kraft',['maxstyrka','hållstyrka','explosivitet']],['Uthållighet',['kondition','återhämtningsförmåga','seghet']],['Kroppskontroll',['koordination','kroppskännedom','balans']]]],
+   ['Flexibilitet','−',[['Aktiv stretch',['styrka i ytterläge','spänn och släpp','aktiv kontroll']],['Yinstretch',['fullt rörelseomfång','avspänning','bindväv']],['Mobilitet',['dynamisk stretch','ledrörlighet','flöde']]]],
+   ['Livskraft','⊙',[['Näring',['kost','fasta','matsmältning']],['Vila',['vila i rörelse','sömn','dygnsrytm']],['Andning',['inandning','utandning','andetagets rytm']]]]]],
  ['Sinne','−',[['Vilja','+',[['Disciplin',['rutiner','avhållsamhet','självbehärskning']],['Tålamod',['ihärdighet','acceptans','sinnesro']],['Fokus',['koncentration','uppmärksamhet','försjunkenhet']]]],
    ['Tystnad','−',[['Reflektion',['självrannsakan','eftertanke','självkännedom']],['Känsla',['att visa','att känna','sinnesjämvikt']],['Intuition',['instinkt','lyhördhet','klarsyn']]]],
    ['Skapande','⊙',[['Uttryck',['tal','skrift','konst']],['Lärande',['studier','minne','förståelse']],['Fantasi',['idéer','drömmar','vision']]]]]],
@@ -635,13 +635,13 @@ const TRIOVN={
  'balans':[['Handstående','Handstående mot vägg, sedan fritt.'],['Trädet','Stå på ett ben i trädets ställning och andas; sedan med slutna ögon.'],['Balansgång','Gå på en stock, en kant eller en slackline.']],
  'styrka i ytterläge':[['Djupa utfall','Utfall och tåhävningar i djupaste läget, med lätt vikt.'],['Djup huk','Sitt i djup knäböj med hälarna i marken, fem minuter.'],['Golvflöde','Kryp, kliv och rulla på golvet som ett djur.']],
  'ledrörlighet':[['Ledcirklar','Långsamma, stora cirklar i varje led, varje morgon.'],['Hängande leder','Häng i en stång och häng framåt; låt tyngden öppna lederna.'],['Fri rörelse','Rör dig till musik så att varje led får röra sig.']],
- 'fullt rörelseomfång':[['Hela rörelsen','Djup knäböj och hel pull-up: använd hela vägen.'],['Yinpositioner','Ligg kvar tre till fem minuter i varje position.'],['Spagat och brygga','Arbeta mot spagaten och bryggan, steg för steg.']],
+ 'spänn och släpp':[['Spänn och släpp','Gå in i stretchen, spänn muskeln mot motstånd i sex sekunder, släpp på en utandning och sjunk djupare. Tre varv.'],['Andas dig djupare','Spänn lätt på inandningen och släpp helt på utandningen, varv efter varv, utan att pressa.'],['Parstretch','En partner håller emot när du spänner och följer med när du släpper.']],
+ 'aktiv kontroll':[['Aktiva lyft','Lyft benet eller armen så högt du kan utan hjälp av händerna, och håll i fem sekunder.'],['Stilla i ytterläget','Glid långsamt ut i ytterläget och håll det stilla med lätt spänning, med slutna ögon.'],['Kontrollerade sparkar','Långsamma, höga sparkar som du håller i toppen, som i kampkonstens former.']],
+ 'fullt rörelseomfång':[['Spagat och brygga','Arbeta mot spagaten och bryggan, steg för steg.'],['Yinpositioner','Ligg kvar tre till fem minuter i varje position.'],['Hela rörelsen','Djup knäböj och hel pull-up: använd hela vägen.']],
+ 'bindväv':[['Rulla och tryck','Rulla långsamt med en boll eller rulle längs musklerna och stanna där det är ömt.'],['Yinyoga','Tre till fem minuter i varje position, helt utan ansträngning, så att bindväven ger efter.'],['Spiralsträckningar','Sträck dig i långa spiraler från fingrar till tår, med hela kroppen.']],
  'dynamisk stretch':[['Svingar','Bensvingar och armcirklar före passet.'],['Kattens stretch','Långsamma, svepande sträckningar när du vaknar.'],['Solhälsning','Solhälsningen i eget tempo och med egna variationer.']],
- 'passiv stretch':[['Spänn och släpp','Spänn muskeln i stretchen, släpp och gå djupare.'],['Yinyoga','Tre minuter i varje position, helt utan ansträngning.'],['Parstretch','Stretcha tillsammans med någon som hjälper och känner efter.']],
  'avspänning':[['Spänn och slappna','Spänn muskel efter muskel och släpp, från fötterna och upp.'],['Liggande stillhet','Ligg alldeles stilla i tio minuter.'],['Skakning','Skaka hela kroppen fritt i två minuter.']],
- 'rytm':[['Hopprep','Hoppa rep i jämn takt.'],['Andningsgång','Gå i takt med andningen: fyra steg in, fyra steg ut.'],['Trumma','Trumma, eller dansa till trumma.']],
- 'följsamhet':[['Händernas lek','Tryckande händer med en partner, som i taijins push hands.'],['Flyt','Flyt i vattnet och låt dig bäras.'],['Spegellek','Följ en annans rörelser som en spegel.']],
- 'flöde':[['Rörelseflöde','Knyt ihop övningarna utan paus, som en enda rörelse.'],['Lång simtur','Simma långsamt och långt.'],['Improvisation','Rör dig fritt som du vill i tio minuter.']],
+ 'flöde':[['Rörelseflöde','Knyt ihop övningarna utan paus, som en enda rörelse.'],['Lång simtur','Simma långsamt och långt.'],['Improvisation','Rör dig fritt i tio minuter, ensam eller följsamt med en partner.']],
  'kost':[['Laga från grunden','Laga maten själv av riktiga råvaror.'],['Ät i tystnad','En måltid om dagen långsamt och i tystnad.'],['Plocka och odla','Plocka bär, svamp eller örter, eller odla något du äter.']],
  'matsmältning':[['Promenad efter maten','En lugn promenad efter måltiden.'],['Tugga länge','Tugga varje tugga länge, tjugo gånger.'],['Fermentera','Gör surkål, kombucha eller annat själv.']],
  'fasta':[['Veckans fasta','Tjugofyra timmar, från tisdagens middag till onsdagens middag.'],['Nattens fasta','Tolv timmar mellan kvällsmålet och frukosten.'],['Fastevandring','Gå en lång vandring fastande.']],
@@ -658,7 +658,7 @@ const TRI=(()=>{const mk=(n,sign,kids)=>({n,sign,kids});
  const asNod=([an,as,fu])=>mk(an,as,fu.map(fuNod));
  return mk('Du','',TRI_RAW.map(([pn,ps,asp])=>mk(pn,ps,asp.map(asNod))))})();
 // vilka sysslor som vårdar vilka kvaliteter
-const TRIACT={styrka:['maxstyrka','hållstyrka','seghet'],sprint:['explosivitet','kondition'],balans:['balans','kroppskännedom'],stretch:['dynamisk stretch','ledrörlighet'],langstretch:['passiv stretch','avspänning','fullt rörelseomfång'],
+const TRIACT={styrka:['maxstyrka','hållstyrka','seghet'],sprint:['explosivitet','kondition'],balans:['balans','kroppskännedom'],stretch:['dynamisk stretch','ledrörlighet'],langstretch:['fullt rörelseomfång','avspänning','spänn och släpp'],
  andning:['utandning','inandning','andetagets rytm'],toning:['tal','andetagets rytm'],meditation:['koncentrativ meditation','öppen närvaro','sinnesro'],ljus:['dygnsrytm'],kallbad:['seghet','acceptans','återhämtningsförmåga'],bastu:['avspänning','återhämtningsförmåga'],
  fasta:['fasta','avhållsamhet','självbehärskning'],kost:['kost','matsmältning'],promenad:['kondition','vila i rörelse'],vandring:['kondition','vila i rörelse','förundran'],lasning:['studier','förståelse'],skriva:['skrift','eftertanke'],rita:['konst','idéer'],
  runa:['studier','dagliga ritualer'],kvallsfraga:['självrannsakan','eftertanke','självkännedom'],dromavsikt:['drömmar','vision'],dromdagbok:['drömmar','minne'],skarmfritt:['dygnsrytm','avhållsamhet'],relation:['vänskap','släkt och familj'],sejd:['klarsyn','lyhördhet','förbindelse'],
@@ -667,13 +667,13 @@ const TRIACT={styrka:['maxstyrka','hållstyrka','seghet'],sprint:['explosivitet'
  bad:['avspänning'],jordning:['förbindelse','kroppskännedom'],sol:['dygnsrytm'],vigning:['högtider','offer','helighet'],
  k_kalistenik:['hållstyrka','koordination'],k_intervall:['kondition','seghet'],k_kampkonst:['koordination','handlingskraft'],k_boxning:['explosivitet','kondition'],k_klattring:['hållstyrka','seghet'],k_handstaende:['balans','hållstyrka'],k_lagereld:['förbindelse','förundran'],k_modig:['handlingskraft','sårbarhet'],k_mal:['mål','mening'],k_leda:['handlingskraft','integritet'],
  k_nasa:['inandning','andetagets rytm'],k_hypoxi:['utandning','seghet'],k_poesi:['skrift','konst'],k_sjunga:['tal','glädje'],k_sprak:['studier','minne'],k_utantill:['minne'],k_saga:['tal','minne'],k_studera:['studier','förståelse'],k_forelasning:['studier','uppmärksamhet'],k_schack:['koncentration','förståelse'],k_planera:['mål','rutiner'],
- k_lopning:['kondition','rytm'],k_cykel:['kondition'],k_ute:['dygnsrytm','förundran'],k_utsikt:['förundran','vision'],k_samtal:['att visa','vänskap'],k_ringvan:['vänskap'],k_instrument:['konst','rytm'],
- k_yoga:['passiv stretch','öppen närvaro'],k_dans:['rytm','flöde','glädje'],k_simning:['flöde','kondition'],k_rorlighet:['ledrörlighet','fullt rörelseomfång'],k_kalldusch:['seghet','acceptans'],k_vaxel:['återhämtningsförmåga'],k_torrborst:['kroppskännedom'],k_lymf:['kroppskännedom','återhämtningsförmåga'],k_vatten:['matsmältning'],
- k_kansla:['att känna','självkännedom'],k_tarar:['att känna','sårbarhet'],k_tack:['att tacka','glädje'],k_forlat:['förlåtelse','barmhärtighet'],k_musik:['att känna','förundran'],k_kram:['att ta emot','samhörighet'],k_slakt:['släkt och familj'],k_lek:['glädje','följsamhet'],k_hjalp:['hjälpsamhet','ödmjukhet'],k_vattenpromenad:['vila i rörelse','förundran'],
+ k_lopning:['kondition','koordination'],k_cykel:['kondition'],k_ute:['dygnsrytm','förundran'],k_utsikt:['förundran','vision'],k_samtal:['att visa','vänskap'],k_ringvan:['vänskap'],k_instrument:['konst','koordination'],
+ k_yoga:['bindväv','öppen närvaro'],k_dans:['koordination','flöde','glädje'],k_simning:['flöde','kondition'],k_rorlighet:['ledrörlighet','aktiv kontroll','styrka i ytterläge'],k_kalldusch:['seghet','acceptans'],k_vaxel:['återhämtningsförmåga'],k_torrborst:['kroppskännedom'],k_lymf:['kroppskännedom','återhämtningsförmåga'],k_vatten:['matsmältning'],
+ k_kansla:['att känna','självkännedom'],k_tarar:['att känna','sårbarhet'],k_tack:['att tacka','glädje'],k_forlat:['förlåtelse','barmhärtighet'],k_musik:['att känna','förundran'],k_kram:['att ta emot','samhörighet'],k_slakt:['släkt och familj'],k_lek:['glädje','flöde'],k_hjalp:['hjälpsamhet','ödmjukhet'],k_vattenpromenad:['vila i rörelse','förundran'],
  k_skog:['vila i rörelse','förbindelse'],k_bara:['seghet','maxstyrka'],k_matlagning:['kost'],k_baka:['kost','ihärdighet'],k_odla:['kost','ihärdighet'],k_plocka:['kost','förbindelse'],k_fermentera:['matsmältning'],k_rensa:['rutiner','självbehärskning'],k_ekonomi:['rutiner','mål'],k_somn:['sömn','dygnsrytm'],
  k_mala:['konst','idéer'],k_hantverk:['konst','ihärdighet'],k_sy:['koncentration','konst'],k_lera:['konst','försjunkenhet'],k_slaktforskning:['släkt och familj','minne'],k_gravar:['släkt och familj','offer'],k_trad:['mening','öde'],k_attlingar:['skrift','mening'],k_djuparbete:['koncentration','försjunkenhet'],
  k_kontemplation:['eftertanke','enhet'],k_skarmfri_dag:['avhållsamhet','öppen närvaro'],k_bon:['dagliga ritualer','helighet'],k_blot:['högtider','offer'],k_galder:['tal','förbindelse'],k_klardrom:['drömmar','klarsyn'],k_nidra:['avspänning','sömn'],k_stjarnor:['förundran','enhet'],k_solnedgang:['förundran','dygnsrytm'],k_helig:['helighet','förbindelse'],
- k_manfasta:['fasta','avhållsamhet'],k_arsfasta:['fasta','offer'],k_mantra:['koncentrativ meditation','tal'],k_trumma:['rytm','förbindelse'],k_tystnad:['öppen närvaro','lyhördhet'],k_qigong:['flöde','andetagets rytm']};
+ k_manfasta:['fasta','avhållsamhet'],k_arsfasta:['fasta','offer'],k_mantra:['koncentrativ meditation','tal'],k_trumma:['koordination','förbindelse'],k_tystnad:['öppen närvaro','lyhördhet'],k_qigong:['flöde','andetagets rytm']};
 let triVag=[],triSel=null,triAnim=false,triFrom='eter';
 function triVarde(){const since=new Date();since.setDate(since.getDate()-28);const s=iso(since),c={};
  S.log.filter(l=>l.d>=s).forEach(l=>(TRIACT[l.a]||[]).forEach(k=>c[k]=(c[k]||0)+1));
@@ -1781,6 +1781,17 @@ const YRINFO_EN={
 
 for(const k in YRINFO_EN){EN[YRINFO[k][0]]=YRINFO_EN[k][0];EN[YRINFO[k][1]]=YRINFO_EN[k][1]}
 EN['LifOS-månaderna']='The LifOS months';
+Object.assign(EN,{'Aktiv stretch':'Active stretching','Yinstretch':'Yin stretching','Mobilitet':'Mobility','spänn och släpp':'contract and release','aktiv kontroll':'active control','bindväv':'connective tissue',
+'Gå in i stretchen, spänn muskeln mot motstånd i sex sekunder, släpp på en utandning och sjunk djupare. Tre varv.':'Go into the stretch, tense the muscle against resistance for six seconds, release on an out-breath and sink deeper. Three rounds.',
+'Andas dig djupare':'Breathe deeper','Spänn lätt på inandningen och släpp helt på utandningen, varv efter varv, utan att pressa.':'Tense lightly on the in-breath and let go completely on the out-breath, round after round, without forcing.',
+'En partner håller emot när du spänner och följer med när du släpper.':'A partner resists as you tense and follows as you release.',
+'Aktiva lyft':'Active lifts','Lyft benet eller armen så högt du kan utan hjälp av händerna, och håll i fem sekunder.':'Lift the leg or arm as high as you can without help from the hands, and hold for five seconds.',
+'Stilla i ytterläget':'Still at end range','Glid långsamt ut i ytterläget och håll det stilla med lätt spänning, med slutna ögon.':'Glide slowly out to end range and hold it still with light tension, eyes closed.',
+'Kontrollerade sparkar':'Controlled kicks','Långsamma, höga sparkar som du håller i toppen, som i kampkonstens former.':'Slow, high kicks held at the top, as in the forms of the martial arts.',
+'Rulla och tryck':'Roll and press','Rulla långsamt med en boll eller rulle längs musklerna och stanna där det är ömt.':'Roll slowly with a ball or roller along the muscles and stay where it is tender.',
+'Tre till fem minuter i varje position, helt utan ansträngning, så att bindväven ger efter.':'Three to five minutes in each position, entirely without effort, so that the connective tissue yields.',
+'Spiralsträckningar':'Spiral stretches','Sträck dig i långa spiraler från fingrar till tår, med hela kroppen.':'Stretch in long spirals from fingers to toes, with the whole body.',
+'Rör dig fritt i tio minuter, ensam eller följsamt med en partner.':'Move freely for ten minutes, alone or following a partner.'});
 
 // ---------- Himlen: verklig måne, Thuns stjärnbildsdagar ----------
 const SYN=29.530588853;
