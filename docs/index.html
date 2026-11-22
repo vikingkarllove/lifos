@@ -682,8 +682,8 @@ let triVag=[],triSel=null,triAnim=false,triFrom='eter';
 function triNod(p){let n=TRI;p.forEach(i=>n=n.kids[i]);return n}
 const TRIPOS={'⊙':0,'−':1,'+':2};
 // Triforcen: färghjulets tre grundfärger i hörnen, blandfärgerna där de möts
-const TRICOL={'⊙':[232,194,106],'+':[201,80,60],'−':[79,127,196]};
-const HJUL=['#E8C26A','#E3A55A','#D8834A','#CF6A42','#C9503C','#A8456E','#7E4F9A','#5F5FB0','#4F7FC4','#4E9AA8','#6FA36A','#A9B964'];
+const TRICOL={'⊙':[255,206,0],'+':[228,30,36],'−':[24,78,222]};
+const HJUL=(()=>{const P=[TRICOL['⊙'],TRICOL['+'],TRICOL['−']],hx=c=>'#'+c.map(x=>Math.round(x).toString(16).padStart(2,'0')).join('');const ut=[];for(let i=0;i<12;i++){const a=P[Math.floor(i/4)],b=P[(Math.floor(i/4)+1)%3];ut.push(hx(hmix(a,b,(i%4)/4)))}return ut})();
 const mixc=(a,b,t)=>a.map((x,i)=>Math.round(x*(1-t)+b[i]*t));
 const rgb=c=>`rgb(${c[0]},${c[1]},${c[2]})`;
 function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixed(1),mini=opt.mini;
