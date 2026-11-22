@@ -2285,10 +2285,13 @@ const DOMANER=[
   ['narvaro','Närvaro','Att vara helt här, nu.',[['Uppmärksamhet'],['Stillhet']]],
   ['mening','Mening','Syfte, insikt och tacksamhet.',[['Insikt'],['Syfte'],['Tacksamhet']]],
   ['forbundenhet','Förbundenhet','Bandet till något större än en själv.',[['Gemenskap'],['Det heliga']]]]]];
-const ATTRMAL=12;
-function karStats(){const s28=dayIso(-28),L=S.log.filter(l=>l.d>=s28),vikt={},ant={},per={},ut={},TA=testAttr(),snitt=A=>A.length?Math.round(A.reduce((a,b)=>a+b,0)/A.length):null;
- L.forEach(l=>{const g=GDB[l.a];if(!g)return;const id=l.d+l.a+(l.t||'');[[g.f,1],[g.a,.5]].forEach(([A,w])=>A.forEach(x=>{vikt[x]=(vikt[x]||0)+w;ant[x]=(ant[x]||0)+1;const s=x.split('.')[0];(per[s]=per[s]||new Set()).add(id)}))});
- DOMANER.forEach(([dk,dn,col,ST])=>{const stats=ST.map(([k,n,d,AT])=>{const attr=AT.map(([an])=>{const x=k+'.'+an,T=TA[x],o={n:an,c:ant[x]||0,v:Math.round(100*Math.min(1,(vikt[x]||0)/ATTRMAL))};
+// Långtidsstatsen fylls som verklig träning: en gärning väger mindre ju äldre den är (tidskonstant 42 dygn,
+// som fitness i Banisters modell), och kurvan planar ut. Dagligen i två veckor ≈ 33, i två månader ≈ 67, i ett halvår ≈ 74.
+const ATTRMAL=30,STAT_TAU=42;
+function logTid(l){return l.t||new Date(l.d+'T12:00').getTime()}
+function karStats(){const s28=dayIso(-28),s180=dayIso(-180),nu=Date.now(),L=S.log.filter(l=>l.d>=s180),vikt={},ant={},per={},ut={},TA=testAttr(),snitt=A=>A.length?Math.round(A.reduce((a,b)=>a+b,0)/A.length):null;
+ L.forEach(l=>{const g=GDB[l.a];if(!g)return;const id=l.d+l.a+(l.t||''),ny=l.d>=s28,ald=Math.max(0,(nu-logTid(l))/864e5),k=Math.exp(-ald/STAT_TAU);[[g.f,1],[g.a,.5]].forEach(([A,w])=>A.forEach(x=>{vikt[x]=(vikt[x]||0)+w*k;if(ny){ant[x]=(ant[x]||0)+1;const s=x.split('.')[0];(per[s]=per[s]||new Set()).add(id)}}))});
+ DOMANER.forEach(([dk,dn,col,ST])=>{const stats=ST.map(([k,n,d,AT])=>{const attr=AT.map(([an])=>{const x=k+'.'+an,T=TA[x],o={n:an,c:ant[x]||0,v:Math.round(100*(1-Math.exp(-(vikt[x]||0)/ATTRMAL)))};
     // ett test ersätter uppskattningen: det verkliga måttet mot normen
     if(T){o.v=snitt(T.map(t=>t.p));o.testad=true;o.tester=T;o.med=snitt(T.filter(t=>t.med!=null).map(t=>t.med));o.elit=snitt(T.filter(t=>t.elit!=null).map(t=>t.elit))}return o});
    const tA=attr.filter(a=>a.testad),sd=tA.map(a=>a.tester.map(t=>t.d)).flat().sort();
@@ -2566,16 +2569,32 @@ function hemAktiva(){const A=(S.quests||[]).filter(q=>q.status==='aktiv').map(qM
 let tavlaOppen=false;
 // Hem: spelarramen med de klassiska staplarna, Vitalitet (HP), Mana och Stamina, och XP
 const GSET=t=>new Set(Object.keys(GDB).filter(k=>GDB[k].dag.includes(t)));
-function resurser(){const td=today(),ig=dayIso(-1),s7=dayIso(-6),L=S.log,L7=L.filter(l=>l.d>=s7),n7=A=>L7.filter(l=>A.has(l.a)).length,pa=(d,set)=>L.filter(l=>l.d===d&&set.has(l.a)).length;
- const VIT=GSET('V+'),MPL=GSET('M+'),MMI=GSET('M-'),SMI=GSET('S-'),SPL=GSET('S+'),ROR=new Set(Object.keys(GDB).filter(k=>GDB[k].kat==='Träning')),RENA=new Set([...GSET('G-'),...RENING]);
- // Vitalitet: det som bygger kroppen den senaste veckan (sömn, ljus, näring, återhämtning) och rörelse, minus överträning
- let tunga=0;for(let i=0;i<3;i++)tunga+=pa(dayIso(-i),SMI);const over=Math.max(0,tunga-3)*8;
- const vitalitet=Math.max(5,Math.min(100,Math.round(55+45*(.6*Math.min(1,n7(VIT)/8)+.4*Math.min(1,n7(ROR)/4))-over)));
- // Mana: fylls av det som lugnar och av sömn, förbrukas av djupt tankearbete
- const somnat=L.some(l=>(l.d===td||l.d===ig)&&SPL.has(l.a));
- const mana=Math.max(5,Math.min(100,Math.round(60+12*pa(td,MPL)+5*pa(ig,MPL)+(somnat?10:0)-10*pa(td,MMI)-4*pa(ig,MMI))));
- // Stamina: förbrukas av tunga pass, fylls av vila och sömn
- const stamina=Math.max(5,Math.min(100,100-28*pa(td,SMI)-14*pa(ig,SMI)+(somnat?10:0)));
+// När du vaknade: kl 7 om inget annat syns, tidigare om du loggat något före dess
+function vakenSedan(){const n=new Date(),h=n.getHours()+n.getMinutes()/60;
+ const tidigast=S.log.filter(l=>l.d===today()&&l.t).map(l=>{const d=new Date(l.t);return d.getHours()+d.getMinutes()/60}).filter(x=>x>=4&&x<7).sort((a,b)=>a-b)[0];
+ const vak=tidigast!=null?tidigast:7;if(h<4)return h+24-7;return Math.max(0,h-vak)}
+function resurser(){const td=today(),nu=Date.now(),L=S.log,TIM=36e5,DYGN=864e5,
+ VIT=GSET('V+'),MPL=GSET('M+'),MMI=GSET('M-'),SMI=GSET('S-'),SPL=new Set(['k_tupplur']),ROR=new Set(Object.keys(GDB).filter(k=>GDB[k].kat==='Träning')),RENA=new Set([...GSET('G-'),...RENING]),
+ ald=l=>Math.max(0,(nu-logTid(l))/DYGN),ewma=(set,tau,dagar)=>{const s=dayIso(-dagar);return L.filter(l=>l.d>=s&&set.has(l.a)).reduce((a,l)=>a+Math.exp(-ald(l)/tau),0)},
+ vaken=vakenSedan(),K=karStats(),kond=((K.kropp&&K.kropp.stats.find(s=>s.k==='kondition'))||{v:0}).v;
+ // Vitalitet: den långsamma. Sömn, ljus, näring och återhämtning (ungefär tre om dagen)
+ // och rörelse (fyra pass i veckan) med två veckors minne. 100 går nästan inte att nå; runt 90 är mycket bra.
+ const vSum=ewma(VIT,14,60),rSum=ewma(ROR,14,60),x=.6*Math.min(1.2,vSum/42)+.4*Math.min(1.2,rSum/8);
+ // överträning: belastningen senaste veckan mot månaden (akut mot kronisk, över 1,5 ökar skaderisken)
+ const ak=L.filter(l=>l.d>=dayIso(-6)&&SMI.has(l.a)).length/7,kr=L.filter(l=>l.d>=dayIso(-27)&&SMI.has(l.a)).length/28,
+  over=ak*7>=4&&kr>0&&ak/kr>1.5?Math.round((ak/kr-1.5)*30):0;
+ const vitalitet=Math.max(5,Math.min(100,Math.round(40+60*(1-Math.exp(-2.2*x))-over)));
+ // Mana: full när du vaknar och sjunker för varje vaken timme (adenosinet byggs upp), med en dipp efter lunch.
+ // Det som lugnar fyller på, djupt tankearbete tömmer. Räknas i tidsordning, så att det du gjorde i morse inte bär hela kvällen.
+ let mana=100;const start=nu-vaken*TIM,hand=L.filter(l=>l.t&&l.t>=start&&(MPL.has(l.a)||MMI.has(l.a)||SPL.has(l.a))).sort((a,b)=>a.t-b.t);let tp=start;
+ const dipp=(a,b)=>{let s=0;for(let t=a;t<b;t+=6e5){const hh=new Date(t).getHours();if(hh>=13&&hh<15)s+=6/12}return s};
+ hand.forEach(l=>{mana-=4*(l.t-tp)/TIM+dipp(tp,l.t);mana=Math.max(5,Math.min(100,mana));if(MPL.has(l.a))mana+=14;if(SPL.has(l.a))mana+=20;if(MMI.has(l.a))mana-=10;mana=Math.max(5,Math.min(100,mana));tp=l.t});
+ mana-=4*(nu-tp)/TIM+dipp(tp,nu);mana=Math.max(5,Math.min(100,Math.round(mana)));
+ // Stamina: tunga pass tömmer och kroppen återhämtar sig under ett till tre dygn. Bättre kondition = mindre tapp.
+ // Den sjunker också lite under dagen, och en tupplur fyller på.
+ const trott=L.filter(l=>l.d>=dayIso(-3)&&(SMI.has(l.a)||ROR.has(l.a))).reduce((a,l)=>a+(SMI.has(l.a)?35:8)*Math.exp(-(nu-logTid(l))/(20*TIM)),0)*(1-.4*kond/100),
+  vila=L.filter(l=>l.d===td&&SPL.has(l.a)).length*10;
+ const stamina=Math.max(5,Math.min(100,Math.round(100-trott-1.2*vaken+vila)));
  // Slagg: dagar sedan senaste rening
  let sista=null;for(let i=0;i<30;i++){if(L.some(l=>l.d===dayIso(-i)&&RENA.has(l.a))){sista=i;break}}const slagg=Math.min(100,sista===null?100:sista*12);
  const akt=(S.quests||[]).filter(q=>q.status==='aktiv'),ara=akt.length?Math.round(100*akt.reduce((a,q)=>a+Math.min(1,qProg(q).p),0)/akt.length):0;
@@ -2622,10 +2641,10 @@ function tiden(){const now=new Date(),wd=now.getDay(),c=cal(now),hm=himmel(now),
  ${lag?veckan():''}
  <div class="p">${VKORT('mane',moonNow(30),'Månen',cap(hm.name)+' · sköldpaddans skal och månaden')}${VKORT('sol',SMIKON.arshjul,'Årshjulet','året i fyra väderstreck')}</div>`}
 // ---------- Toppmenyn: inställningarna, Triforcen och tiden ----------
-function topHTML(){return `<nav class="topbar" aria-label="Inställningarna, Triforcen och tiden">
- <button data-go="smedjan" aria-label="Inställningar" class="iconbtn" style="color:var(--gold);opacity:.78;flex-direction:column;gap:3px;height:64px">${STAED}<span style="font-family:var(--label);font-size:8px;letter-spacing:.1em">INSTÄLLNINGAR</span></button>
+function topHTML(){return `<nav class="topbar" aria-label="Tiden, Triforcen och inställningarna">
+ <button data-go="tiden" aria-label="Tiden: dagshjulet, veckan, månen och året" class="iconbtn" style="color:var(--gold);flex-direction:column;gap:3px;height:64px"><span id="tidikon" style="line-height:0">${tidIkon(30)}</span><span style="font-family:var(--label);font-size:9px;letter-spacing:.16em">TIDEN</span></button>
  <button data-gotri aria-label="Triforcen" class="iconbtn" style="color:var(--gold);flex-direction:column;gap:3px;height:64px">${triMini(44)}<span style="font-family:var(--label);font-size:9px;letter-spacing:.16em">TRIFORCEN</span></button>
- <button data-go="tiden" aria-label="Tiden: dagshjulet, veckan, månen och året" class="iconbtn" style="color:var(--gold);flex-direction:column;gap:3px;height:64px"><span id="tidikon" style="line-height:0">${tidIkon(30)}</span><span style="font-family:var(--label);font-size:9px;letter-spacing:.16em">TIDEN</span></button></nav>`}
+ <button data-go="smedjan" aria-label="Inställningar" class="iconbtn" style="color:var(--gold);opacity:.78;flex-direction:column;gap:3px;height:64px">${STAED}<span style="font-family:var(--label);font-size:8px;letter-spacing:.1em">INSTÄLLNINGAR</span></button></nav>`}
 
 // ---------- Den inre kartan, ritad som i en gammal fantasybok ----------
 function kust(cx,cy,rx,ry,n,seed,amp){const pts=[];let s=seed;const rnd=()=>{s=(s*9301+49297)%233280;return s/233280};
@@ -2812,7 +2831,7 @@ const enLista=t=>t.split(' · ').map(x=>trs(x)).join(' · ');
 const enMal=t=>t.replace(/^gör det en gång$/,'do it once').replace(/^(\d+) gånger i veckan i (\d+) veckor$/,'$1 times a week for $2 weeks').replace(/^(\d+) dagar i följd$/,'$1 days in a row').replace(/^(\d+) gånger$/,'$1 times');
 Object.assign(EN,{'TRIFORCEN':'TRIFORCE','INSTÄLLNINGAR':'SETTINGS','Okänt land':'Unknown land','Den inre kartan: tryck på en plats':'The inner map: tap a place','Etern, Triforcen och inställningarna':'The Ether, the Triforce and the settings','Triforcen':'The Triforce'});
 EN_RE.unshift([/^Ritualerna (.+)$/,(m,a)=>'The rituals '+enDag(a)],[/^(.+) loggad för (.+)$/,(m,a,b)=>trs(a)+' logged for '+enDag(b)],[/^(.+) struken för (.+)$/,(m,a,b)=>trs(a)+' removed for '+enDag(b)],[/^(.+) loggad$/,(m,a)=>trs(a)+' logged'],[/^Tillagt i dag: (.+)$/,(m,a)=>'Added today: '+a.split(', ').map(trs).join(', ')]);
-Object.assign(EN,{'När gjorde du det?':'When did you do it?','I dag':'Today','I går':'Yesterday','I förrgår':'The day before yesterday','Andra gärningar':'Other deeds','Välj ett annat datum':'Choose another date','Dagens signatur':'Today\'s signature','Uppdragstavlan':'The quest board','I dag':'Today','Pågående':'Ongoing','visa checklistan':'show the checklist','dölj checklistan':'hide the checklist','guld':'gold','silver':'silver','järn':'iron','kvicksilver':'quicksilver','tenn':'tin','koppar':'copper','bly':'lead','Tiden':'Time','TIDEN':'TIME','Veckokristallen':'The week crystal','Veckan ›':'The week ›','Tryck för dygnets klockor och traditioner':'Tap for the clocks and traditions of the day','Tiden: dagshjulet, veckan, månen och året':'Time: the day wheel, the week, the moon and the year','Inställningarna, Triforcen och tiden':'The settings, the Triforce and time'});
+Object.assign(EN,{'När gjorde du det?':'When did you do it?','I dag':'Today','I går':'Yesterday','I förrgår':'The day before yesterday','Andra gärningar':'Other deeds','Välj ett annat datum':'Choose another date','Dagens signatur':'Today\'s signature','Uppdragstavlan':'The quest board','I dag':'Today','Pågående':'Ongoing','visa checklistan':'show the checklist','dölj checklistan':'hide the checklist','guld':'gold','silver':'silver','järn':'iron','kvicksilver':'quicksilver','tenn':'tin','koppar':'copper','bly':'lead','Tiden':'Time','TIDEN':'TIME','Veckokristallen':'The week crystal','Veckan ›':'The week ›','Tryck för dygnets klockor och traditioner':'Tap for the clocks and traditions of the day','Tiden: dagshjulet, veckan, månen och året':'Time: the day wheel, the week, the moon and the year','Inställningarna, Triforcen och tiden':'The settings, the Triforce and time','Tiden, Triforcen och inställningarna':'Time, the Triforce and the settings'});
 EN_RE.unshift([/^Dagens signatur · (.+)$/,'Today\'s signature · $1'],[/^(Solen|Månen|Mars|Merkurius|Jupiter|Venus|Saturnus) · (\S+) · (.+)$/,(m,a,b,c)=>trs(a)+' · '+trs(b)+' · '+trs(c)],[/^av (\d+)$/,'of $1'],[/^(.+) · (växande|avtagande)$/,(m,a,b)=>trs(a)+' · '+(b==='växande'?'waxing':'waning')]);
 EN_RE.push([/^· (.+)$/,(m,a)=>'· '+trs(a)]);
 EN_RE.unshift(
