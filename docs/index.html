@@ -685,20 +685,14 @@ const TRIPOS={'⊙':0,'−':1,'+':2};
 const TRICOL={'⊙':[232,194,106],'+':[201,80,60],'−':[79,127,196]};
 // polerna: den yttersta lilla triangeln i varje hörn bär grundfärgen själv
 const PRAKT={'⊙':[255,206,0],'+':[228,30,36],'−':[24,78,222]};
-// Ittens färgcirkel i tolv steg: grundfärger, sekundärfärger och tertiärfärgerna mellan dem
-const ITTEN={Y:[244,229,0],YO:[253,198,11],O:[241,142,28],RO:[234,98,31],R:[227,35,34],RV:[196,3,125],V:[109,57,139],BV:[68,78,153],B:[42,113,176],BG:[6,150,187],G:[0,142,91],YG:[140,187,38]};
-const ISIGN={'⊙':'Y','+':'R','−':'B'};
-// stora Triforcen: delen 'liten' inne i triangeln 'stor'. Samma tecken = grundfärgen; annars blandningen, dragen mot den stora triangelns grundfärg
-function ittenPar(stor,liten){const a=ISIGN[stor],b=ISIGN[liten];if(a===b)return ITTEN[a];const sek={RY:'O',BY:'G',BR:'V'}[[a,b].sort().join('')];
- return ITTEN[{Y:{O:'YO',G:'YG'},R:{O:'RO',V:'RV'},B:{G:'BG',V:'BV'}}[a][sek]]}
-const HJUL=['#F4E500','#FDC60B','#F18E1C','#EA621F','#E32322','#C4037D','#6D398B','#444E99','#2A71B0','#0696BB','#008E5B','#8CBB26'];
+const HJUL=['#E8C26A','#E3A55A','#D8834A','#CF6A42','#C9503C','#A8456E','#7E4F9A','#5F5FB0','#4F7FC4','#4E9AA8','#6FA36A','#A9B964'];
 const mixc=(a,b,t)=>a.map((x,i)=>Math.round(x*(1-t)+b[i]*t));
 const rgb=c=>`rgb(${c[0]},${c[1]},${c[2]})`;
 function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixed(1),mini=opt.mini;
  const A=[0,-Rc],B=[-0.866*Rc,0.5*Rc],C=[0.866*Rc,0.5*Rc],m=(p,q)=>[(p[0]+q[0])/2,(p[1]+q[1])/2];
  const split=(T)=>{const [a,b,c]=T,ab=m(a,b),bc=m(b,c),ca=m(c,a);return {'⊙':[a,ab,ca],'−':[ab,b,bc],'+':[ca,bc,c],hole:[ab,bc,ca]}};
  const poly=pp=>pp.map(p=>f(p[0])+','+f(p[1])).join(' '),cen=pp=>[(pp[0][0]+pp[1][0]+pp[2][0])/3,(pp[0][1]+pp[1][1]+pp[2][1])/3];
- const op=v=>(0.16+0.84*Math.min(1,v)).toFixed(2);
+ const op=v=>(0.16+0.72*Math.min(1,v)).toFixed(2);
  let g=`<defs><linearGradient id="trisheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
   <radialGradient id="trihalo"><stop offset="0" stop-color="${opt.col?rgb(opt.col):'#E8C26A'}" stop-opacity="${opt.col?.22:.10}"/><stop offset="1" stop-color="${opt.col?rgb(opt.col):'#E8C26A'}" stop-opacity="0"/></radialGradient>
   <filter id="triglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${mini?3:4}" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
@@ -713,9 +707,9 @@ function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixe
   if(depth>0&&kn&&kn.kids&&kn.kids.length){const sp=split(pts);kn.kids.forEach(kk=>{const c2=pole&&kk.sign===pole?PRAKT[pole]:hmix(col,TRICOL[kk.sign]);s+=`<polygon points="${poly(sp[kk.sign])}" fill="${rgb(c2)}" fill-opacity="${(op(val(kk))*(pole&&kk.sign===pole?1:0.55)).toFixed(2)}"/>`});
    s+=`<polygon points="${poly(sp.hole)}" fill="#07090C" fill-opacity=".55"/><polygon points="${poly(sp.hole)}" fill="none" stroke="#F1E6C8" stroke-opacity=".12" stroke-width=".5"/>`}
   return s};
- node.kids.forEach((k,i)=>{const T=top[k.sign],sp=split(T),base=opt.col?hmix(opt.col,TRICOL[k.sign]):ITTEN[ISIGN[k.sign]],vv=val?val(k):0,sel=opt.sel===i;
+ node.kids.forEach((k,i)=>{const T=top[k.sign],sp=split(T),base=opt.col?hmix(opt.col,TRICOL[k.sign]):TRICOL[k.sign],vv=val?val(k):0,sel=opt.sel===i;
   g+=`<g ${opt.tap?`data-tri="${i}" style="cursor:pointer" role="button" aria-label="${k.n}"`:''}>`;
-  if(k.kids.length){k.kids.forEach(kk=>{g+=opt.col?cell(sp[kk.sign],hmix(base,TRICOL[kk.sign]),val(kk),mini?0:1,kk,null):cell(sp[kk.sign],ittenPar(k.sign,kk.sign),val(kk),0,null,null)});
+  if(k.kids.length){k.kids.forEach(kk=>{g+=cell(sp[kk.sign],hmix(base,TRICOL[kk.sign]),val(kk),mini?0:1,kk,!opt.col&&kk.sign===k.sign?k.sign:null)});
    g+=`<polygon points="${poly(sp.hole)}" fill="#07090C" fill-opacity=".82"/>`}
   else g+=cell(T,base,vv,0,null);
   g+=`<polygon points="${poly(T)}" fill="none" stroke="${sel?'#F1E6C8':rgb(mixc(base,[241,230,200],.35))}" stroke-width="${sel?2.4:mini?1.6:1.1}" stroke-linejoin="round" ${vv>0.45||sel?'filter="url(#triglow)"':''}/>`;
