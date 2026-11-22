@@ -682,8 +682,10 @@ let triVag=[],triSel=null,triAnim=false,triFrom='eter';
 function triNod(p){let n=TRI;p.forEach(i=>n=n.kids[i]);return n}
 const TRIPOS={'⊙':0,'−':1,'+':2};
 // Triforcen: färghjulets tre grundfärger i hörnen, blandfärgerna där de möts
-const TRICOL={'⊙':[255,206,0],'+':[228,30,36],'−':[24,78,222]};
-const HJUL=(()=>{const P=[TRICOL['⊙'],TRICOL['+'],TRICOL['−']],hx=c=>'#'+c.map(x=>Math.round(x).toString(16).padStart(2,'0')).join('');const ut=[];for(let i=0;i<12;i++){const a=P[Math.floor(i/4)],b=P[(Math.floor(i/4)+1)%3];ut.push(hx(hmix(a,b,(i%4)/4)))}return ut})();
+const TRICOL={'⊙':[232,194,106],'+':[201,80,60],'−':[79,127,196]};
+// polerna: den yttersta lilla triangeln i varje hörn bär grundfärgen själv
+const PRAKT={'⊙':[255,206,0],'+':[228,30,36],'−':[24,78,222]};
+const HJUL=['#E8C26A','#E3A55A','#D8834A','#CF6A42','#C9503C','#A8456E','#7E4F9A','#5F5FB0','#4F7FC4','#4E9AA8','#6FA36A','#A9B964'];
 const mixc=(a,b,t)=>a.map((x,i)=>Math.round(x*(1-t)+b[i]*t));
 const rgb=c=>`rgb(${c[0]},${c[1]},${c[2]})`;
 function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixed(1),mini=opt.mini;
@@ -701,13 +703,13 @@ function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixe
  if(!mini)g+=`<circle r="${r1+5}" fill="none" stroke="#E8C26A" stroke-opacity=".25" stroke-width=".6"/><circle r="${r0-4}" fill="none" stroke="#E8C26A" stroke-opacity=".18" stroke-width=".6"/>`;
  const top=split([A,B,C]);
  // en triangel: fyllning i blandfärg, glans, och ett lager till inuti
- const cell=(pts,col,v,depth,kn)=>{let s=`<polygon points="${poly(pts)}" fill="${rgb(col)}" fill-opacity="${op(v)}"/><polygon points="${poly(pts)}" fill="url(#trisheen)"/>`;
-  if(depth>0&&kn&&kn.kids&&kn.kids.length){const sp=split(pts);kn.kids.forEach(kk=>{const c2=hmix(col,TRICOL[kk.sign]);s+=`<polygon points="${poly(sp[kk.sign])}" fill="${rgb(c2)}" fill-opacity="${(op(val(kk))*0.55).toFixed(2)}"/>`});
+ const cell=(pts,col,v,depth,kn,pole)=>{if(pole&&!(depth>0&&kn&&kn.kids&&kn.kids.length))col=PRAKT[pole];let s=`<polygon points="${poly(pts)}" fill="${rgb(col)}" fill-opacity="${op(v)}"/><polygon points="${poly(pts)}" fill="url(#trisheen)"/>`;
+  if(depth>0&&kn&&kn.kids&&kn.kids.length){const sp=split(pts);kn.kids.forEach(kk=>{const c2=pole&&kk.sign===pole?PRAKT[pole]:hmix(col,TRICOL[kk.sign]);s+=`<polygon points="${poly(sp[kk.sign])}" fill="${rgb(c2)}" fill-opacity="${(op(val(kk))*(pole&&kk.sign===pole?1:0.55)).toFixed(2)}"/>`});
    s+=`<polygon points="${poly(sp.hole)}" fill="#07090C" fill-opacity=".55"/><polygon points="${poly(sp.hole)}" fill="none" stroke="#F1E6C8" stroke-opacity=".12" stroke-width=".5"/>`}
   return s};
  node.kids.forEach((k,i)=>{const T=top[k.sign],sp=split(T),base=opt.col?hmix(opt.col,TRICOL[k.sign]):TRICOL[k.sign],vv=val?val(k):0,sel=opt.sel===i;
   g+=`<g ${opt.tap?`data-tri="${i}" style="cursor:pointer" role="button" aria-label="${k.n}"`:''}>`;
-  if(k.kids.length){k.kids.forEach(kk=>{g+=cell(sp[kk.sign],hmix(base,TRICOL[kk.sign]),val(kk),mini?0:1,kk)});
+  if(k.kids.length){k.kids.forEach(kk=>{g+=cell(sp[kk.sign],hmix(base,TRICOL[kk.sign]),val(kk),mini?0:1,kk,!opt.col&&kk.sign===k.sign?k.sign:null)});
    g+=`<polygon points="${poly(sp.hole)}" fill="#07090C" fill-opacity=".82"/>`}
   else g+=cell(T,base,vv,0,null);
   g+=`<polygon points="${poly(T)}" fill="none" stroke="${sel?'#F1E6C8':rgb(mixc(base,[241,230,200],.35))}" stroke-width="${sel?2.4:mini?1.6:1.1}" stroke-linejoin="round" ${vv>0.45||sel?'filter="url(#triglow)"':''}/>`;
