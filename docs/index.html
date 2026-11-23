@@ -704,7 +704,7 @@ function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixe
  const top=split([A,B,C]);
  // en triangel: fyllning i blandfärg, glans, och ett lager till inuti
  const cell=(pts,col,v,depth,kn,pole)=>{if(pole&&!(depth>0&&kn&&kn.kids&&kn.kids.length))col=PRAKT[pole];let s=`<polygon points="${poly(pts)}" fill="${rgb(col)}" fill-opacity="${op(v)}"/><polygon points="${poly(pts)}" fill="url(#trisheen)"/>`;
-  if(depth>0&&kn&&kn.kids&&kn.kids.length){const sp=split(pts);kn.kids.forEach(kk=>{const c2=pole&&kk.sign===pole?PRAKT[pole]:hmix(col,TRICOL[kk.sign]);s+=`<polygon points="${poly(sp[kk.sign])}" fill="${rgb(c2)}" fill-opacity="${(op(val(kk))*(pole&&kk.sign===pole?1:0.55)).toFixed(2)}"/>`});
+  if(depth>0&&kn&&kn.kids&&kn.kids.length){const sp=split(pts);kn.kids.forEach(kk=>{const c2=pole&&kk.sign===pole?PRAKT[pole]:hmix(col,TRICOL[kk.sign]);s+=`<polygon points="${poly(sp[kk.sign])}" fill="${rgb(c2)}" fill-opacity="${pole&&kk.sign===pole?(0.16+0.84*Math.min(1,val(kk))).toFixed(2):(op(val(kk))*0.55).toFixed(2)}"/>`});
    s+=`<polygon points="${poly(sp.hole)}" fill="#07090C" fill-opacity=".55"/><polygon points="${poly(sp.hole)}" fill="none" stroke="#F1E6C8" stroke-opacity=".12" stroke-width=".5"/>`}
   return s};
  node.kids.forEach((k,i)=>{const T=top[k.sign],sp=split(T),base=opt.col?hmix(opt.col,TRICOL[k.sign]):TRICOL[k.sign],vv=val?val(k):0,sel=opt.sel===i;
