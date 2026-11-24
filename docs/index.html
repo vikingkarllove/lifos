@@ -16,7 +16,7 @@
 <style>
 #app{position:relative;isolation:isolate}
 .temabg{position:absolute;left:0;right:0;top:0;height:800px;z-index:-1;pointer-events:none;overflow:hidden;-webkit-mask-image:linear-gradient(#000 0,#000 72%,transparent 100%);mask-image:linear-gradient(#000 0,#000 72%,transparent 100%)}
-.temabg:after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(7,9,12,.55),rgba(7,9,12,0) 170px)}
+.temabg:after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(7,9,12,.66),rgba(7,9,12,.18) 210px,rgba(7,9,12,.28))}
 #app.tema-on [data-gotri]>span:last-child{background:rgba(8,10,14,.5);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:12px;padding:6px 4px 7px}
 #app.tema-on .p{background:rgba(12,15,20,.64);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 
@@ -780,8 +780,8 @@ function triforceSVG(node,val,opt){opt=opt||{};const Rc=opt.R||130,f=x=>x.toFixe
  return g;
 }
 // ---------- Teman: landskap som appen ritar själv ----------
-const TEMAN=[['auto','Följ årstiden','byter med årets gång'],['skog','Skog','granar i skymning'],['berg','Berg','fjällen i aftonglöd'],['hav','Hav','månen över havet'],['vinter','Vinter','norrsken över snön'],['var','Vår','gryning och knoppar'],['sommar','Sommar','midsommarnatt vid sjön'],['host','Höst','löven i lågt ljus'],['ingen','Inget','bara mörkret']];
-function temaNu(){const t=S.tema||'ingen';if(t!=='auto')return t;const m=new Date().getMonth();return m===11||m<=1?'vinter':m<=4?'var':m<=7?'sommar':'host'}
+const TEMAN=[['stjarnor','Stjärnnatten','John Bauer'],['dos','Dösen i vintern','J.C. Dahl, 1838'],['fjord','Vinter vid Sognefjorden','J.C. Dahl, 1827'],['tuvstarr','Tuvstarr','John Bauer, 1913'],['riddaren','Riddaren och trollen','John Bauer'],['stormen','Stormen','Marcus Larson, 1857'],['ingen','Inget','bara mörkret']];
+function temaNu(){const t=S.tema||'ingen';return TEMAN.some(x=>x[0]===t)?t:'ingen'}
 function temaRng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 // en bergs- eller kullrad: mittpunktsförskjutning, mjuk eller spetsig
 function temaRad(r,y0,amp,niv,grov,mjuk){let P=[[-20,y0+(r()-.5)*amp],[420,y0+(r()-.5)*amp]],a=amp;
@@ -859,9 +859,9 @@ function temaSVG(k,id){id=id||'t';const r=temaRng({skog:7,berg:11,hav:23,vinter:
   for(let i=0;i<46;i++)body+=`<ellipse cx="${(r()*400).toFixed(1)}" cy="${(180+r()*360).toFixed(1)}" rx="2.6" ry="1.3" transform="rotate(${(r()*180).toFixed(0)})" fill="${['#E0913A','#C8622E','#D9B04A','#B8452A'][i%4]}" opacity="${(.5+r()*.45).toFixed(2)}" style="transform-box:fill-box;transform-origin:center"/>`;}
  else return '';
  return `<svg viewBox="0 0 400 560" preserveAspectRatio="xMidYMin slice" width="100%" height="100%" aria-hidden="true"><defs>${defs}</defs>${body}</svg>`}
-function temaBg(){const k=temaNu();if(k==='ingen')return '';return `<div class="temabg">${temaSVG(k,'hb')}</div>`}
-function temaRum(){const val=S.tema||'ingen',nu=temaNu();
- return `<p class="muted small" style="margin:0 0 12px">Landskapet ligger bakom Hem och tonar ner i mörkret, så att allt går lätt att läsa.</p><div class="grid2">${TEMAN.map(([k,n,d])=>{const vis=k==='auto'?nu:k;return `<button data-tema="${k}" aria-pressed="${val===k}" style="position:relative;display:block;padding:0;border:1px solid ${val===k?'var(--gold)':'var(--line2)'};border-radius:8px;overflow:hidden;background:#0B0E12;color:inherit;font:inherit;text-align:left"><span style="display:block;height:110px;line-height:0;overflow:hidden">${vis==='ingen'?'':`<span style="display:block;width:100%;height:220px;transform:translateY(-70px)">${temaSVG(vis,'tp'+k)}</span>`}</span><span style="display:block;padding:8px 10px 9px;background:linear-gradient(transparent,#0B0E12 30%)"><span class="serif" style="display:block;font-size:17px;color:var(--cream)">${val===k?'✓ ':''}${n}</span><span class="muted" style="font-size:11px">${k==='auto'?'nu: '+(TEMAN.find(t=>t[0]===nu)||['',''])[1].toLowerCase():d}</span></span></button>`}).join('')}</div>`}
+function temaBg(){const k=temaNu();if(k==='ingen')return '';return `<div class="temabg"><img src="bg/${k}.webp" alt="" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center top"></div>`}
+function temaRum(){const val=temaNu();
+ return `<p class="muted small" style="margin:0 0 12px">Målningar av de nordiska mästarna, alla så gamla att de är fria att använda. Bilden ligger bakom Hem och tonar ner i mörkret.</p><div class="grid2">${TEMAN.map(([k,n,d])=>`<button data-tema="${k}" aria-pressed="${val===k}" style="position:relative;display:block;padding:0;border:1px solid ${val===k?'var(--gold)':'var(--line2)'};border-radius:8px;overflow:hidden;background:#0B0E12;color:inherit;font:inherit;text-align:left"><span style="display:block;height:130px;line-height:0;overflow:hidden;background:#07090C">${k==='ingen'?'':`<img src="bg/${k}.webp" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center 30%">`}</span><span style="display:block;padding:8px 10px 9px"><span class="serif" style="display:block;font-size:16px;line-height:1.2;color:var(--cream)">${val===k?'✓ ':''}${n}</span><span class="muted" style="font-size:11px">${d}</span></span></button>`).join('')}</div>`}
 
 // domänernas staplar: varje domän i sitt eget material. Kroppen blod och puls, sinnet kristall, känslan vågor, anden runor i guld.
 let domN=0;const DOMSTIL={kropp:{c1:'#F0644E',c2:'#7A1E14',ram:'#7A3A2E'},sinne:{c1:'#A8C8FF',c2:'#2A4F9A',ram:'#3A5A88'},kansla:{c1:'#F2A6CB',c2:'#7A2E5A',ram:'#7A3E64'},ande:{c1:'#FFE9A0',c2:'#B8841C',ram:'#8A7038'}};
@@ -1366,6 +1366,7 @@ Object.assign(EN,{'Varför?':'Why?'});
 EN_RE.unshift([/^Dagsformen kl (\d\d:\d\d)$/,(m,a)=>'Today\'s form at '+a]);EN_RE.unshift([/^Pigghet (\S+) ↻$/,(m,a)=>'Alertness '+a+' ↻']);
 Object.assign(EN,{'Sinnet':'The mind','Livet':'Life','nio frågor · en halv minut':'nine questions · half a minute','Hur skarp och fokuserad känner du dig?':'How sharp and focused do you feel?','mycket skarp':'very sharp','dimmig':'foggy','Hur stor lust har du att ta tag i saker?':'How much drive do you have to get things done?','stor lust':'strong drive','ingen lust':'no drive','Hur återhämtad känner sig kroppen?':'How recovered does your body feel?','inte alls':'not at all','helt återhämtad':'fully recovered','Hur trött är kroppen?':'How tired is your body?','mycket':'very','Hur mycket träningsvärk har du?':'How sore are your muscles?','ingen':'none','Hur levande och full av energi känner du dig?':'How alive and full of energy do you feel?','helt':'completely','Hur sov du i natt?':'How did you sleep last night?','mycket dåligt':'very badly','Hur är din hälsa i dag?':'How is your health today?','mycket dålig':'very poor','Svara på alla nio frågorna':'Answer all nine questions','Fyll i ›':'Fill in ›','Uppdatera ›':'Update ›','Nio korta frågor gör barerna till mätningar i stället för gissningar.':'Nine short questions turn the bars into measurements instead of guesses.','● mätt':'● measured','○ uppskattad':'○ estimated','Fyll i dagsformen':'Fill in today\'s form'});
 Object.assign(EN,{'hållna löften':'kept promises'});
+Object.assign(EN,{'Stjärnnatten':'The starry night','Dösen i vintern':'The dolmen in winter','Vinter vid Sognefjorden':'Winter at the Sognefjord','Tuvstarr':'Tuvstarr','Riddaren och trollen':'The knight and the trolls','Stormen':'The storm','Målningar av de nordiska mästarna, alla så gamla att de är fria att använda. Bilden ligger bakom Hem och tonar ner i mörkret.':'Paintings by the Nordic masters, all old enough to be free to use. The picture lies behind Home and fades into the dark.'});
 function trs(t){if(!t)return t;if(EN[t]!==undefined)return EN[t];for(const [re,to] of EN_RE)if(re.test(t))return t.replace(re,to);
  if(t.includes(' · ')){const p=t.split(' · ');const r=p.map(x=>trs(x.trim()));if(r.some((x,i)=>x!==p[i].trim()))return r.join(' · ')}
  if(/^‹ /.test(t)){const r=trs(t.slice(2));if(r!==t.slice(2))return '‹ '+r}
